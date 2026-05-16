@@ -1,0 +1,1127 @@
+# 🔍 مراجعة شاملة ودقيقة للمشروع الكامل
+
+سأراجع كل جزء بشكل منهجي وأكشف النقص والأخطاء.
+
+---
+
+## 🚨 المشاكل الحرجة (ستمنع التشغيل)
+
+---
+
+### ❌ مشكلة 1 — BaseEntity غير موجود في الـ Namespace الصحيح
+
+```csharp
+// المشكلة: جميع الـ Models ترث من BaseEntity
+// لكن لم يتم استيراده في كل ملف
+
+// الحل — أضف في كل Model file:
+using BlockFactory.Core.Models.Base;
+```
+
+---
+
+### ❌ مشكلة 2 — IUnitOfWork يفتقد DbSets مهمة
+
+```csharp
+// BlockFactory.Core/Interfaces/IUnitOfWork.cs
+// المشكلة: هذه الـ Repositories غير معرّفة في الـ Interface
+
+public interface IUnitOfWork : IDisposable
+{
+    // ─── كانت ناقصة ─────────────────────────────
+    IRepository<Models.Suppliers.SupplierPayment> SupplierPayments { get; }
+    IRepository<Models.HR.Deduction> Deductions { get; }
+    IRepository<Models.Production.ProductionRecord> Productions { get; }
+    IRepository<Models.Production.ProductionMaterialUsage>
+        ProductionMaterialUsages { get; }
+    IRepository<Models.Inventory.InventoryTransaction>
+        InventoryTransactions { get; }
+    IRepository<Models.Inventory.RawMaterialTransaction>
+        RawMaterialTransactions { get; }
+
+    // ─── موجودة لكن تحتاج تأكيد ─────────────────
+    IRepository<Models.Finance.WalletTransaction> WalletTransactions { get; }
+    IOrderRepository Orders { get; }
+    ICustomerRepository Customers { get; }
+    IInventoryRepository Inventory { get; }
+    IWorkerRepository Workers { get; }
+    IProductionRepository Productions { get; }
+
+    Task<int> SaveChangesAsync();
+    Task BeginTransactionAsync();
+    Task CommitAsync();
+    Task RollbackAsync();
+}
+```
+
+---
+
+### ❌ مشكلة 3 — UnitOfWork ناقص التطبيق
+
+```csharp
+// BlockFactory.Data/UnitOfWork.cs
+// أضف الـ Repositories الناقصة
+
+public class UnitOfWork : IUnitOfWork
+{
+    private readonly AppDbContext _context;
+    private IDbContextTransaction? _transaction;
+
+    // ─── Specific Repositories ─────────────────
+    private IOrderRepository? _orders;
+    private ICustomerRepository? _customers;
+    private IInventoryRepository? _inventory;
+    private IWorkerRepository? _workers;
+    private IProductionRepository? _productions;
+
+    public UnitOfWork(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    // ─── Specific ──────────────────────────────
+    public IOrderRepository Orders
+        => _orders ??= new OrderRepository(_context);
+
+    public ICustomerRepository Customers
+        => _customers ??= new CustomerRepository(_context);
+
+    public IInventoryRepository Inventory
+        => _inventory ??= new InventoryRepository(_context);
+
+    public IWorkerRepository Workers
+        => _workers ??= new WorkerRepository(_context);
+
+    public IProductionRepository Productions
+        => _productions ??= new ProductionRepository(_context);
+
+    // ─── Generic — الناقصة ─────────────────────
+    public IRepository<Core.Models.Suppliers.SupplierPayment>
+        SupplierPayments
+        => new Repository<Core.Models.Suppliers.SupplierPayment>(
+            _context);
+
+    public IRepository<Core.Models.HR.Deduction> Deductions
+        => new Repository<Core.Models.HR.Deduction>(_context);
+
+    public IRepository<Core.Models.Finance.WalletTransaction>
+        WalletTransactions
+        => new Repository<Core.Models.Finance.WalletTransaction>(
+            _context);
+
+    public IRepository<Core.Models.Inventory.InventoryTransaction>
+        InventoryTransactions
+        => new Repository<Core.Models.Inventory.InventoryTransaction>(
+            _context);
+
+    public IRepository<Core.Models.Inventory.RawMaterialTransaction>
+        RawMaterialTransactions
+        => new Repository<Core.Models.Inventory.RawMaterialTransaction>(
+            _context);
+
+    public IRepository<Core.Models.Production.ProductionMaterialUsage>
+        ProductionMaterialUsages
+        => new Repository<Core.Models.Production.ProductionMaterialUsage>(
+            _context);
+
+    // ─── Transaction ───────────────────────────
+    public async Task<int> SaveChangesAsync()
+        => await _context.SaveChangesAsync();
+
+    public async Task BeginTransactionAsync()
+        => _transaction = await _context.Database
+            .BeginTransactionAsync();
+
+    public async Task CommitAsync()
+    {
+        if (_transaction != null)
+        {
+            await _transaction.CommitAsync();
+            await _transaction.DisposeAsync();
+            _transaction = null;
+        }
+    }
+
+    public async Task RollbackAsync()
+    {
+        if (_transaction != null)
+        {
+            await _transaction.RollbackAsync();
+            await _transaction.DisposeAsync();
+            _transaction = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        _transaction?.Dispose();
+        _context.Dispose();
+    }
+}
+```
+
+---
+
+### ❌ مشكلة 4 — Repositories ناقصة التطبيق
+
+```csharp
+// BlockFactory.Data/Repositories/InventoryRepository.cs
+// لم يُكتب في المحادثة — هذا هو الكود الكامل
+
+using BlockFactory.Core.Interfaces.Repositories;
+using BlockFactory.Core.Models.Inventory;
+using Microsoft.EntityFrameworkCore;
+
+namespace BlockFactory.Data.Repositories
+{
+    public class InventoryRepository
+        : Repository<InventoryStock>, IInventoryRepository
+    {
+        public InventoryRepository(AppDbContext context)
+            : base(context) { }
+
+        public async Task<InventoryStock?> GetByProductAsync(
+            int productId)
+            => await _context.InventoryStocks
+                .FirstOrDefaultAsync(s => s.ProductId == productId);
+
+        public async Task<IEnumerable<InventoryStock>>
+            GetLowStockAsync()
+            => await _context.InventoryStocks
+                .Include(s => s.Product)
+                .Where(s => s.QuantityAvailable <= s.MinimumThreshold)
+                .ToListAsync();
+
+        public async Task<IEnumerable<RawMaterial>>
+            GetLowRawMaterialsAsync()
+            => await _context.RawMaterials
+                .Where(m => m.IsActive &&
+                       m.QuantityAvailable <= m.MinimumThreshold)
+                .ToListAsync();
+
+        public async Task UpdateStockAsync(
+            int productId, int quantity,
+            TransactionType type, string? reference = null)
+        {
+            var stock = await GetByProductAsync(productId);
+            if (stock == null) return;
+
+            var before = stock.QuantityAvailable;
+            stock.QuantityAvailable += quantity;
+            stock.LastUpdated = DateTime.Now;
+
+            if (stock.QuantityAvailable < 0)
+                stock.QuantityAvailable = 0;
+
+            _context.InventoryStocks.Update(stock);
+
+            var transaction = new InventoryTransaction
+            {
+                ProductId = productId,
+                Type = type,
+                Quantity = Math.Abs(quantity),
+                QuantityBefore = before,
+                QuantityAfter = stock.QuantityAvailable,
+                TransactionDate = DateTime.Now,
+                Reference = reference,
+                CreatedAt = DateTime.Now
+            };
+            await _context.InventoryTransactions.AddAsync(transaction);
+        }
+
+        // إضافة هذه الـ Method للـ Interface
+        public new IQueryable<InventoryStock> Query()
+            => _context.InventoryStocks.AsQueryable();
+    }
+}
+```
+
+```csharp
+// BlockFactory.Data/Repositories/ProductionRepository.cs
+// لم يُكتب في المحادثة
+
+using BlockFactory.Core.Interfaces.Repositories;
+using BlockFactory.Core.Models.Production;
+using Microsoft.EntityFrameworkCore;
+
+namespace BlockFactory.Data.Repositories
+{
+    public class ProductionRepository
+        : Repository<ProductionRecord>, IProductionRepository
+    {
+        public ProductionRepository(AppDbContext context)
+            : base(context) { }
+
+        public async Task<IEnumerable<ProductionRecord>>
+            GetByDateAsync(DateTime date)
+            => await _context.ProductionRecords
+                .Include(p => p.Product)
+                    .ThenInclude(p => p.ProductType)
+                .Include(p => p.MaterialUsages)
+                    .ThenInclude(m => m.RawMaterial)
+                .Where(p =>
+                    p.ProductionDate.Date == date.Date &&
+                    !p.IsDeleted)
+                .OrderBy(p => p.CreatedAt)
+                .ToListAsync();
+
+        public async Task<IEnumerable<ProductionRecord>>
+            GetByDateRangeAsync(DateTime from, DateTime to)
+            => await _context.ProductionRecords
+                .Include(p => p.Product)
+                    .ThenInclude(p => p.ProductType)
+                .Include(p => p.MaterialUsages)
+                    .ThenInclude(m => m.RawMaterial)
+                .Where(p =>
+                    p.ProductionDate.Date >= from.Date &&
+                    p.ProductionDate.Date <= to.Date &&
+                    !p.IsDeleted)
+                .OrderByDescending(p => p.ProductionDate)
+                .ToListAsync();
+
+        public async Task<int> GetTotalProducedAsync(
+            int productId, DateTime from, DateTime to)
+            => await _context.ProductionRecords
+                .Where(p =>
+                    p.ProductId == productId &&
+                    p.ProductionDate.Date >= from.Date &&
+                    p.ProductionDate.Date <= to.Date &&
+                    !p.IsDeleted)
+                .SumAsync(p => p.QuantityNet);
+
+        public async Task<IEnumerable<ProductionRecord>>
+            GetTodayProductionAsync()
+            => await GetByDateAsync(DateTime.Today);
+
+        public new IQueryable<ProductionRecord> Query()
+            => _context.ProductionRecords.AsQueryable();
+    }
+}
+```
+
+```csharp
+// BlockFactory.Data/Repositories/WorkerRepository.cs
+// لم يُكتب في المحادثة
+
+using BlockFactory.Core.Interfaces.Repositories;
+using BlockFactory.Core.Models.HR;
+using Microsoft.EntityFrameworkCore;
+
+namespace BlockFactory.Data.Repositories
+{
+    public class WorkerRepository
+        : Repository<Worker>, IWorkerRepository
+    {
+        public WorkerRepository(AppDbContext context)
+            : base(context) { }
+
+        public async Task<Worker?> GetWorkerWithSalariesAsync(
+            int workerId)
+            => await _context.Workers
+                .Include(w => w.Salaries)
+                .Include(w => w.Advances)
+                .Include(w => w.Deductions)
+                .FirstOrDefaultAsync(w => w.Id == workerId);
+
+        public async Task<IEnumerable<Advance>>
+            GetPendingAdvancesAsync(int workerId)
+            => await _context.Advances
+                .Where(a =>
+                    a.WorkerId == workerId &&
+                    a.Status == AdvanceStatus.Pending)
+                .ToListAsync();
+
+        public async Task<decimal> GetTotalAdvancesAsync(
+            int workerId, int month, int year)
+            => await _context.Advances
+                .Where(a =>
+                    a.WorkerId == workerId &&
+                    a.Status == AdvanceStatus.Pending)
+                .SumAsync(a => a.Amount);
+
+        public async Task<MonthlySalary?> GetMonthlySalaryAsync(
+            int workerId, int month, int year)
+            => await _context.MonthlySalaries
+                .FirstOrDefaultAsync(s =>
+                    s.WorkerId == workerId &&
+                    s.Month == month &&
+                    s.Year == year);
+
+        public async Task<IEnumerable<Worker>>
+            GetActiveWorkersAsync()
+            => await _context.Workers
+                .Where(w =>
+                    w.Status == WorkerStatus.Active &&
+                    !w.IsDeleted)
+                .OrderBy(w => w.FullName)
+                .ToListAsync();
+
+        public new IQueryable<Worker> Query()
+            => _context.Workers.AsQueryable();
+    }
+}
+```
+
+---
+
+### ❌ مشكلة 5 — AuthService يستخدم IUnitOfWork لكن ActivityLog يحتاج DbSet مباشر
+
+```csharp
+// BlockFactory.Core/Services/AuthService.cs
+// تصحيح دالة LogActivityAsync
+
+public async Task LogActivityAsync(
+    string action, string entityName,
+    int? entityId = null,
+    string? oldValues = null,
+    string? newValues = null)
+{
+    try
+    {
+        // تجاهل إذا لم يكن هناك مستخدم مسجّل
+        if (CurrentSession.Instance.UserId == 0) return;
+
+        var log = new ActivityLog
+        {
+            Action = action,
+            EntityName = entityName,
+            EntityId = entityId,
+            OldValues = oldValues,
+            NewValues = newValues,
+            UserId = CurrentSession.Instance.UserId,
+            LoggedAt = DateTime.Now,
+            CreatedAt = DateTime.Now
+        };
+
+        await _uow.ActivityLogs.AddAsync(log);
+        await _uow.SaveChangesAsync();
+    }
+    catch
+    {
+        // لا نوقف التطبيق بسبب فشل تسجيل النشاط
+    }
+}
+```
+
+---
+
+### ❌ مشكلة 6 — ProductionService يستخدم RawMaterialTransaction بشكل خاطئ
+
+```csharp
+// BlockFactory.Core/Services/ProductionService.cs
+// في CreateProductionRecordAsync — هذا الكود كان خاطئاً:
+
+// ❌ خطأ — كان يضيف RawMaterial بدلاً من Transaction
+await _uow.RawMaterials.AddAsync(new Models.Inventory.RawMaterial());
+
+// ✅ الصحيح
+var rawTrans = new RawMaterialTransaction
+{
+    RawMaterialId = usage.RawMaterialId,
+    Type = RawMaterialTransactionType.ProductionOut,
+    Quantity = usage.QuantityUsed,
+    QuantityBefore = before,
+    QuantityAfter = material.QuantityAvailable,
+    UnitCost = material.CurrentUnitCost,
+    TotalCost = usage.QuantityUsed * material.CurrentUnitCost,
+    TransactionDate = DateTime.Now,
+    Reference = $"PROD-{record.Id}",
+    CreatedAt = DateTime.Now
+};
+await _uow.RawMaterialTransactions.AddAsync(rawTrans);
+```
+
+---
+
+### ❌ مشكلة 7 — InventoryService يستخدم AddAsync بشكل خاطئ
+
+```csharp
+// BlockFactory.Core/Services/InventoryService.cs
+// في AddToInventoryAsync — كان خاطئاً:
+
+// ❌ خطأ
+await _uow.Inventory.AddAsync(stock);
+
+// ✅ الصحيح
+_uow.Inventory.Update(stock);
+
+// وإضافة الـ Transaction
+var transaction = new InventoryTransaction
+{
+    ProductId = productId,
+    Type = quantity > 0
+        ? TransactionType.ProductionIn
+        : TransactionType.AdjustmentOut,
+    Quantity = Math.Abs(quantity),
+    QuantityBefore = before,
+    QuantityAfter = stock.QuantityAvailable,
+    TransactionDate = DateTime.Now,
+    Reference = $"PROD-{recordId}",
+    CreatedAt = DateTime.Now
+};
+await _uow.InventoryTransactions.AddAsync(transaction);
+```
+
+---
+
+## ⚠️ مشاكل متوسطة (ستسبب أخطاء وقت التشغيل)
+
+---
+
+### ⚠️ مشكلة 8 — AppDbContext ناقص DbSets
+
+```csharp
+// BlockFactory.Data/AppDbContext.cs
+// أضف هذه الـ DbSets الناقصة
+
+public DbSet<ProductionMaterialUsage> ProductionMaterialUsages
+    => Set<ProductionMaterialUsage>();
+
+public DbSet<RawMaterialTransaction> RawMaterialTransactions
+    => Set<RawMaterialTransaction>();
+
+public DbSet<InventoryTransaction> InventoryTransactions
+    => Set<InventoryTransaction>();
+
+public DbSet<WalletTransaction> WalletTransactions
+    => Set<WalletTransaction>();
+
+public DbSet<SupplierPayment> SupplierPayments
+    => Set<SupplierPayment>();
+
+public DbSet<Deduction> Deductions
+    => Set<Deduction>();
+```
+
+---
+
+### ⚠️ مشكلة 9 — Global Query Filters ناقصة
+
+```csharp
+// BlockFactory.Data/AppDbContext.cs
+// في OnModelCreating أضف:
+
+modelBuilder.Entity<Supplier>()
+    .HasQueryFilter(x => !x.IsDeleted);
+modelBuilder.Entity<Worker>()
+    .HasQueryFilter(x => !x.IsDeleted);
+modelBuilder.Entity<Product>()
+    .HasQueryFilter(x => !x.IsDeleted);
+modelBuilder.Entity<ProductionRecord>()
+    .HasQueryFilter(x => !x.IsDeleted);
+modelBuilder.Entity<Expense>()
+    .HasQueryFilter(x => !x.IsDeleted);
+```
+
+---
+
+### ⚠️ مشكلة 10 — ICustomerService ناقص Method
+
+```csharp
+// BlockFactory.Core/Interfaces/Services/ICustomerService.cs
+// أضف هذه الـ Method الناقصة
+
+Task<IEnumerable<CustomerListDto>> GetCustomersWithDebtAsync();
+
+// التطبيق في CustomerService.cs
+public async Task<IEnumerable<CustomerListDto>>
+    GetCustomersWithDebtAsync()
+{
+    var customers = await _uow.Customers.Query()
+        .Include(c => c.Orders)
+        .Include(c => c.Pledges)
+        .Where(c => c.TotalDebt > 0 && !c.IsDeleted)
+        .OrderByDescending(c => c.TotalDebt)
+        .ToListAsync();
+
+    return customers.Select(MapToListDto);
+}
+```
+
+---
+
+### ⚠️ مشكلة 11 — IProductionService يستخدم ServiceResult غير معرف
+
+```csharp
+// BlockFactory.Core/Interfaces/Services/IProductionService.cs
+// ServiceResult معرّف في DTOs/Orders
+// أضف using في كل Service يستخدمه
+
+using BlockFactory.Core.DTOs.Orders;
+```
+
+---
+
+### ⚠️ مشكلة 12 — Enum BoolToColorConverter في XAML لا يعمل مع Color مباشرة
+
+```csharp
+// BlockFactory.Desktop/Converters/AdditionalConverters.cs
+// BoolToColorConverter يرجع String وليس Color
+// في XAML يحتاج SolidColorBrush
+
+// ✅ الحل — استخدم هكذا في XAML
+// بدلاً من:
+// Color="{Binding IsActive, Converter=...}"
+
+// استخدم:
+// Background="{Binding IsActive, Converter={StaticResource BoolToBrushConverter}}"
+
+// وأضف هذا الـ Converter
+public class BoolToBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType,
+        object parameter, CultureInfo culture)
+    {
+        bool boolValue = value is bool b && b;
+        var parts = parameter?.ToString()?.Split('|')
+            ?? new[] { "#27AE60", "#E74C3C" };
+
+        var colorStr = boolValue ? parts[0] : parts[1];
+
+        try
+        {
+            var color = (System.Windows.Media.Color)
+                System.Windows.Media.ColorConverter
+                    .ConvertFromString(colorStr);
+            return new System.Windows.Media.SolidColorBrush(color);
+        }
+        catch
+        {
+            return System.Windows.Media.Brushes.Gray;
+        }
+    }
+
+    public object ConvertBack(object value, Type targetType,
+        object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+```
+
+---
+
+### ⚠️ مشكلة 13 — NavigationService في MainShellViewModel يبحث عن Views غير مسجّلة
+
+```csharp
+// BlockFactory.Desktop/ViewModels/MainShellViewModel.cs
+// في OnNavigated أضف المفاتيح الناقصة
+
+private void OnNavigated(string viewName)
+{
+    CurrentViewTitle = viewName switch
+    {
+        "Dashboard"  => "لوحة التحكم",
+        "Orders"     => "الطلبات والفواتير",
+        "NewOrder"   => "طلب جديد",       // ← كان ناقصاً
+        "Customers"  => "العملاء",
+        "Pledges"    => "الرهون",          // ← كان ناقصاً
+        "Production" => "الإنتاج اليومي",
+        "Inventory"  => "المخزون",
+        "Suppliers"  => "الموردون",
+        "Workers"    => "العمال",
+        "Salaries"   => "الرواتب والسلف",
+        "Finance"    => "المحاسبة",
+        "Reports"    => "التقارير",
+        "Products"   => "المنتجات والأسعار",
+        "Users"      => "إدارة المستخدمين",
+        "Settings"   => "الإعدادات",       // ← كان ناقصاً
+        _ => viewName
+    };
+}
+```
+
+---
+
+### ⚠️ مشكلة 14 — MainShell XAML يفتقد xmlns للـ Controls
+
+```xml
+<!-- BlockFactory.Desktop/Views/MainShell.xaml -->
+<!-- أضف هذه الـ Namespace في بداية الملف -->
+
+xmlns:controls=
+    "clr-namespace:BlockFactory.Desktop.Controls"
+xmlns:local=
+    "clr-namespace:BlockFactory.Desktop.Services"
+```
+
+---
+
+### ⚠️ مشكلة 15 — DashboardService يستخدم _uow.Inventory.Query() لكن الـ Interface لا يدعمه مباشرة
+
+```csharp
+// BlockFactory.Core/Services/DashboardService.cs
+// تصحيح الاستعلام
+
+// ❌ خطأ
+var lowStock = await _uow.Inventory.Query()
+    .CountAsync(s => s.QuantityAvailable <= s.MinimumThreshold);
+
+// ✅ الصحيح — استخدم FindAsync
+var stocks = await _uow.Inventory.GetAllAsync();
+dto.LowStockProductsCount = stocks
+    .Count(s => s.QuantityAvailable <= s.MinimumThreshold);
+```
+
+---
+
+## 📋 نقص في الملفات
+
+---
+
+### 📄 ملف ناقص 1 — IProductionRepository لا يحتوي على Query()
+
+```csharp
+// BlockFactory.Core/Interfaces/Repositories/IProductionRepository.cs
+// تحديث كامل
+
+public interface IProductionRepository
+    : IRepository<ProductionRecord>
+{
+    Task<IEnumerable<ProductionRecord>> GetByDateAsync(
+        DateTime date);
+    Task<IEnumerable<ProductionRecord>> GetByDateRangeAsync(
+        DateTime from, DateTime to);
+    Task<int> GetTotalProducedAsync(
+        int productId, DateTime from, DateTime to);
+    Task<IEnumerable<ProductionRecord>> GetTodayProductionAsync();
+
+    // أضف هذه — كانت ناقصة
+    new IQueryable<ProductionRecord> Query();
+}
+```
+
+---
+
+### 📄 ملف ناقص 2 — Configurations ناقصة لبعض الجداول
+
+```csharp
+// BlockFactory.Data/Configurations/SupplierConfiguration.cs
+// لم يُكتب في المحادثة
+
+using BlockFactory.Core.Models.Suppliers;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace BlockFactory.Data.Configurations
+{
+    public class SupplierConfiguration
+        : IEntityTypeConfiguration<Supplier>
+    {
+        public void Configure(EntityTypeBuilder<Supplier> builder)
+        {
+            builder.ToTable("Suppliers");
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.FullName)
+                .IsRequired().HasMaxLength(100);
+
+            builder.Property(x => x.TotalDebt)
+                .HasColumnType("decimal(18,2)");
+
+            builder.HasMany(x => x.Invoices)
+                .WithOne(x => x.Supplier)
+                .HasForeignKey(x => x.SupplierId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(x => x.Payments)
+                .WithOne(x => x.Supplier)
+                .HasForeignKey(x => x.SupplierId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
+    }
+}
+```
+
+```csharp
+// BlockFactory.Data/Configurations/CustomerConfiguration.cs
+// لم يُكتب في المحادثة
+
+public class CustomerConfiguration
+    : IEntityTypeConfiguration<Customer>
+{
+    public void Configure(EntityTypeBuilder<Customer> builder)
+    {
+        builder.ToTable("Customers");
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.FullName)
+            .IsRequired().HasMaxLength(100);
+
+        builder.Property(x => x.TotalDebt)
+            .HasColumnType("decimal(18,2)");
+
+        builder.HasMany(x => x.Orders)
+            .WithOne(x => x.Customer)
+            .HasForeignKey(x => x.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(x => x.Pledges)
+            .WithOne(x => x.Customer)
+            .HasForeignKey(x => x.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+```
+
+---
+
+### 📄 ملف ناقص 3 — PledgesView.xaml لم يُكتب كاملاً
+
+```xml
+<!-- BlockFactory.Desktop/Views/Customers/PledgesView.xaml -->
+<!-- كتب ViewModel فقط — هذا هو الـ XAML الكامل -->
+
+<UserControl
+    x:Class="BlockFactory.Desktop.Views.Customers.PledgesView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    FlowDirection="RightToLeft"
+    Background="#F0F2F5"
+    Loaded="UserControl_Loaded">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- إحصائيات -->
+        <UniformGrid Grid.Row="0" Columns="3"
+                     Margin="0,0,0,12">
+            <Border Background="White" CornerRadius="10"
+                    Padding="16,12" Margin="0,0,10,0">
+                <StackPanel>
+                    <TextBlock Text="الرهون النشطة"
+                               FontSize="11" Foreground="#7F8C8D"
+                               FontFamily="Segoe UI"/>
+                    <TextBlock Text="{Binding ActivePledges}"
+                               FontSize="24" FontWeight="Bold"
+                               Foreground="#E67E22"
+                               FontFamily="Segoe UI"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="White" CornerRadius="10"
+                    Padding="16,12" Margin="0,0,10,0">
+                <StackPanel>
+                    <TextBlock Text="رهون متأخرة"
+                               FontSize="11" Foreground="#7F8C8D"
+                               FontFamily="Segoe UI"/>
+                    <TextBlock Text="{Binding OverduePledges}"
+                               FontSize="24" FontWeight="Bold"
+                               Foreground="#E74C3C"
+                               FontFamily="Segoe UI"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="White" CornerRadius="10"
+                    Padding="16,12">
+                <StackPanel>
+                    <TextBlock Text="تستحق قريباً"
+                               FontSize="11" Foreground="#7F8C8D"
+                               FontFamily="Segoe UI"/>
+                    <TextBlock Text="{Binding DueSoonPledges}"
+                               FontSize="24" FontWeight="Bold"
+                               Foreground="#F39C12"
+                               FontFamily="Segoe UI"/>
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="1" Background="White"
+                CornerRadius="12" Padding="16,10"
+                Margin="0,0,0,12">
+            <Grid>
+                <ComboBox ItemsSource="{Binding FilterOptions}"
+                          SelectedItem="{Binding SelectedFilter}"
+                          Width="150"
+                          HorizontalAlignment="Right"
+                          Height="34" FontFamily="Segoe UI"/>
+
+                <Button Content="✅ استرجاع الرهن"
+                        Command="{Binding ReturnPledgeCommand}"
+                        Height="34" Padding="14,0"
+                        HorizontalAlignment="Left"
+                        Background="#27AE60"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontFamily="Segoe UI"
+                        FontSize="13"
+                        Cursor="Hand"/>
+            </Grid>
+        </Border>
+
+        <!-- DataGrid -->
+        <Border Grid.Row="2" Background="White"
+                CornerRadius="12">
+            <DataGrid
+                ItemsSource="{Binding Pledges}"
+                SelectedItem="{Binding SelectedPledge}"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                GridLinesVisibility="Horizontal"
+                HorizontalGridLinesBrush="#F0F2F5"
+                HeadersVisibility="Column"
+                BorderThickness="0"
+                Background="White"
+                RowBackground="White"
+                AlternatingRowBackground="#FAFBFC"
+                CanUserResizeRows="False"
+                FontFamily="Segoe UI"
+                FontSize="13"
+                RowHeight="44">
+
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#F8F9FA"/>
+                        <Setter Property="Foreground" Value="#7F8C8D"/>
+                        <Setter Property="FontSize" Value="12"/>
+                        <Setter Property="Padding" Value="14,10"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="النوع" Width="60">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding PledgeTypeIcon}"
+                                           FontSize="20"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="العميل"
+                        Binding="{Binding CustomerName}" Width="*"/>
+                    <DataGridTextColumn Header="الهاتف"
+                        Binding="{Binding CustomerPhone}" Width="100"/>
+                    <DataGridTextColumn Header="الوصف"
+                        Binding="{Binding Description}" Width="*"/>
+
+                    <DataGridTemplateColumn Header="الاستحقاق" Width="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    Text="{Binding DueDateText}"
+                                    VerticalAlignment="Center"
+                                    Margin="10,0"
+                                    FontFamily="Segoe UI"
+                                    FontSize="12">
+                                    <TextBlock.Foreground>
+                                        <SolidColorBrush Color="{Binding IsOverdue,
+                                            Converter={StaticResource BoolToColorConverter},
+                                            ConverterParameter='#E74C3C|#2C3E50'}"/>
+                                    </TextBlock.Foreground>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="الحالة" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="6" Padding="8,3"
+                                        HorizontalAlignment="Center"
+                                        Margin="4,10">
+                                    <Border.Background>
+                                        <SolidColorBrush
+                                            Color="{Binding StatusColor}"
+                                            Opacity="0.15"/>
+                                    </Border.Background>
+                                    <TextBlock Text="{Binding Status}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{Binding StatusColor}"
+                                               FontFamily="Segoe UI"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="الطلب المرتبط"
+                        Binding="{Binding RelatedOrderNumber}"
+                        Width="120"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>
+```
+
+---
+
+## 🔧 تصحيحات صغيرة مهمة
+
+---
+
+### 🔧 تصحيح 1 — IAuthService يرجع bool لكن UsersViewModel يتوقع bool
+
+```csharp
+// IAuthService.cs
+Task<bool> DeactivateUserAsync(int userId);
+Task<bool> ActivateUserAsync(int userId);
+
+// ✅ هذا صحيح — لا تغيير
+```
+
+---
+
+### 🔧 تصحيح 2 — DatabaseSeeder يحتاج partial class في ملف واحد
+
+```csharp
+// BlockFactory.Data/Seeders/DatabaseSeeder.cs
+// أضف partial لكل الـ classes
+
+public static partial class DatabaseSeeder
+{
+    public static async Task SeedAsync(AppDbContext context)
+    {
+        await SeedRolesAsync(context);
+        await SeedUsersAsync(context);
+        await SeedProductTypesAsync(context);
+        await SeedProductsAsync(context);
+        await SeedRawMaterialsAsync(context);
+        await SeedAccountsAsync(context);
+        await SeedElectronicWalletsAsync(context);
+        await SeedInventoryStocksAsync(context);
+        await context.SaveChangesAsync();
+    }
+}
+```
+
+---
+
+### 🔧 تصحيح 3 — csproj يحتاج تحديثاً للـ Packages
+
+```xml
+<!-- BlockFactory.Desktop.csproj — النسخة الكاملة الصحيحة -->
+
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>BlockFactory.Desktop</RootNamespace>
+    <ApplicationIcon>Resources\factory.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ASP.NET Core للـ Mobile API -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore"
+                      Version="8.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"
+                      Version="8.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools"
+                      Version="8.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design"
+                      Version="8.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection"
+                      Version="8.0.0"/>
+    <PackageReference Include="BCrypt.Net-Next"
+                      Version="4.0.3"/>
+    <PackageReference Include="QuestPDF"
+                      Version="2024.3.0"/>
+    <PackageReference Include="Microsoft.Data.SqlClient"
+                      Version="5.2.0"/>
+  </ItemGroup>
+
+  <!-- مشاركة Models مع Core -->
+  <ItemGroup>
+    <ProjectReference Include="..\BlockFactory.Core\BlockFactory.Core.csproj"/>
+    <ProjectReference Include="..\BlockFactory.Data\BlockFactory.Data.csproj"/>
+  </ItemGroup>
+</Project>
+```
+
+```xml
+<!-- BlockFactory.Core.csproj -->
+
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore"
+                      Version="8.0.0"/>
+    <PackageReference Include="BCrypt.Net-Next"
+                      Version="4.0.3"/>
+    <PackageReference Include="QuestPDF"
+                      Version="2024.3.0"/>
+  </ItemGroup>
+</Project>
+```
+
+```xml
+<!-- BlockFactory.Data.csproj -->
+
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore"
+                      Version="8.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"
+                      Version="8.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design"
+                      Version="8.0.0"/>
+    <PackageReference Include="Microsoft.Data.SqlClient"
+                      Version="5.2.0"/>
+    <PackageReference Include="BCrypt.Net-Next"
+                      Version="4.0.3"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlockFactory.Core\BlockFactory.Core.csproj"/>
+  </ItemGroup>
+</Project>
+```
+
+---
+
+## 📊 جدول ملخص المراجعة الكاملة
+
+```
+┌─────────────────────────────────────────────────────┐
+│              نتائج المراجعة الشاملة                  │
+├──────────────────────┬──────────────┬───────────────┤
+│ الفئة                │ العدد        │ الأولوية      │
+├──────────────────────┼──────────────┼───────────────┤
+│ أخطاء حرجة          │ 7            │ 🔴 فورية      │
+│ أخطاء متوسطة        │ 8            │ 🟡 مهمة       │
+│ ملفات ناقصة          │ 3            │ 🟠 ضرورية     │
+│ تصحيحات صغيرة       │ 3            │ 🔵 مستحسنة    │
+│ csproj ناقصة        │ 3 ملفات      │ 🔴 فورية      │
+└──────────────────────┴──────────────┴───────────────┘
+```
+
+---
+
+## ✅ ترتيب إصلاح المشاكل
+
+```
+الخطوة 1 — إصلاح csproj (3 ملفات)
+الخطوة 2 — إكمال IUnitOfWork + UnitOfWork
+الخطوة 3 — كتابة الـ 3 Repositories الناقصة
+الخطوة 4 — تحديث AppDbContext بالـ DbSets الناقصة
+الخطوة 5 — تصحيح ProductionService + InventoryService
+الخطوة 6 — إضافة BoolToBrushConverter
+الخطوة 7 — إكمال PledgesView.xaml
+الخطوة 8 — تحديث Configurations
+الخطوة 9 — تحديث NavigationService
+الخطوة 10 — إضافة xmlns في MainShell.xaml
+```

@@ -1,0 +1,1141 @@
+# 🔧 Part 29: Global Error Handler + Loading Overlay + Final Polish
+
+---
+
+## 📁 Part 29-A — Global Exception Handler
+
+```csharp
+// BlockFactory.Desktop/Infrastructure/GlobalExceptionHandler.cs
+
+using System.IO;
+using System.Windows;
+using System.Windows.Threading;
+
+namespace BlockFactory.Desktop.Infrastructure
+{
+    public static class GlobalExceptionHandler
+    {
+        private static readonly string LogFolder =
+            Path.Combine(
+                Environment.GetFolderPath(
+                    Environment.SpecialFolder.LocalApplicationData),
+                "BlockFactory", "Logs");
+
+        public static void Register()
+        {
+            // ─── أخطاء UI Thread ─────────────────────
+            Application.Current.DispatcherUnhandledException +=
+                OnDispatcherUnhandledException;
+
+            // ─── أخطاء Background Threads ────────────
+            AppDomain.CurrentDomain.UnhandledException +=
+                OnUnhandledException;
+
+            // ─── أخطاء Async Tasks ───────────────────
+            TaskScheduler.UnobservedTaskException +=
+                OnUnobservedTaskException;
+
+            Directory.CreateDirectory(LogFolder);
+        }
+
+        private static void OnDispatcherUnhandledException(
+            object sender,
+            DispatcherUnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            LogError(e.Exception);
+            ShowErrorDialog(e.Exception, false);
+        }
+
+        private static void OnUnhandledException(
+            object sender,
+            UnhandledExceptionEventArgs e)
+        {
+            var ex = e.ExceptionObject as Exception;
+            if (ex == null) return;
+
+            LogError(ex);
+
+            if (e.IsTerminating)
+                ShowErrorDialog(ex, true);
+        }
+
+        private static void OnUnobservedTaskException(
+            object? sender,
+            UnobservedTaskExceptionEventArgs e)
+        {
+            e.SetObserved();
+            LogError(e.Exception);
+        }
+
+        // ─── تسجيل الخطأ ────────────────────────────
+        private static void LogError(Exception ex)
+        {
+            try
+            {
+                var logFile = Path.Combine(
+                    LogFolder,
+                    $"error_{DateTime.Today:yyyyMMdd}.log");
+
+                var logEntry =
+                    $"\n{'═'.ToString().PadRight(60, '═')}\n" +
+                    $"التاريخ: {DateTime.Now:dd/MM/yyyy HH:mm:ss}\n" +
+                    $"النوع: {ex.GetType().Name}\n" +
+                    $"الرسالة: {ex.Message}\n" +
+                    $"المصدر: {ex.Source}\n" +
+                    $"تتبع المكدس:\n{ex.StackTrace}\n";
+
+                if (ex.InnerException != null)
+                    logEntry +=
+                        $"الخطأ الداخلي: " +
+                        $"{ex.InnerException.Message}\n";
+
+                File.AppendAllText(logFile, logEntry);
+            }
+            catch { }
+        }
+
+        // ─── عرض رسالة الخطأ ─────────────────────────
+        private static void ShowErrorDialog(
+            Exception ex, bool isFatal)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var message = isFatal
+                    ? $"⚠️ خطأ فادح — سيتم إغلاق التطبيق\n\n" +
+                      $"{GetFriendlyMessage(ex)}"
+                    : $"⚠️ حدث خطأ غير متوقع\n\n" +
+                      $"{GetFriendlyMessage(ex)}\n\n" +
+                      $"تم حفظ تفاصيل الخطأ في ملف السجل.";
+
+                var result = MessageBox.Show(
+                    message,
+                    isFatal ? "خطأ فادح" : "خطأ",
+                    isFatal
+                        ? MessageBoxButton.OK
+                        : MessageBoxButton.OKCancel,
+                    MessageBoxImage.Error,
+                    MessageBoxResult.OK,
+                    MessageBoxOptions.RightAlign |
+                    MessageBoxOptions.RtlReading);
+
+                if (isFatal)
+                    Application.Current.Shutdown(1);
+
+                if (result == MessageBoxResult.Cancel)
+                    OpenLogFolder();
+            });
+        }
+
+        private static string GetFriendlyMessage(Exception ex)
+        {
+            // تحويل رسائل الأخطاء التقنية لرسائل مفهومة
+            if (ex.Message.Contains("SQL") ||
+                ex.Message.Contains("database") ||
+                ex.Message.Contains("connection"))
+                return "خطأ في الاتصال بقاعدة البيانات.\n" +
+                       "تأكد من أن النظام يعمل بشكل صحيح.";
+
+            if (ex.Message.Contains("network") ||
+                ex.Message.Contains("internet"))
+                return "خطأ في الاتصال بالإنترنت.\n" +
+                       "تحقق من اتصالك وأعد المحاولة.";
+
+            if (ex.Message.Contains("access") ||
+                ex.Message.Contains("permission"))
+                return "خطأ في الصلاحيات.\n" +
+                       "لا تملك صلاحية لتنفيذ هذا الإجراء.";
+
+            return ex.Message.Length > 200
+                ? ex.Message[..200] + "..."
+                : ex.Message;
+        }
+
+        private static void OpenLogFolder()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(
+                    "explorer.exe", LogFolder);
+            }
+            catch { }
+        }
+    }
+}
+```
+
+---
+
+## 📁 Part 29-B — Loading Overlay Control
+
+```csharp
+// BlockFactory.Desktop/Controls/LoadingOverlay.xaml.cs
+
+using System.Windows;
+using System.Windows.Controls;
+
+namespace BlockFactory.Desktop.Controls
+{
+    public partial class LoadingOverlay : UserControl
+    {
+        public static readonly DependencyProperty IsLoadingProperty =
+            DependencyProperty.Register(
+                nameof(IsLoading),
+                typeof(bool),
+                typeof(LoadingOverlay),
+                new PropertyMetadata(false));
+
+        public static readonly DependencyProperty MessageProperty =
+            DependencyProperty.Register(
+                nameof(Message),
+                typeof(string),
+                typeof(LoadingOverlay),
+                new PropertyMetadata("جاري التحميل..."));
+
+        public bool IsLoading
+        {
+            get => (bool)GetValue(IsLoadingProperty);
+            set => SetValue(IsLoadingProperty, value);
+        }
+
+        public string Message
+        {
+            get => (string)GetValue(MessageProperty);
+            set => SetValue(MessageProperty, value);
+        }
+
+        public LoadingOverlay()
+        {
+            InitializeComponent();
+        }
+    }
+}
+```
+
+```xml
+<!-- BlockFactory.Desktop/Controls/LoadingOverlay.xaml -->
+
+<UserControl
+    x:Class="BlockFactory.Desktop.Controls.LoadingOverlay"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="root">
+
+    <!-- Overlay خلفية شفافة -->
+    <Grid Visibility="{Binding IsLoading,
+              ElementName=root,
+              Converter={StaticResource BoolToVisibility}}">
+
+        <!-- خلفية شبه شفافة -->
+        <Border Background="#80000000"/>
+
+        <!-- بطاقة التحميل -->
+        <Border Background="White"
+                CornerRadius="16"
+                Padding="40,30"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MinWidth="200">
+            <Border.Effect>
+                <DropShadowEffect Color="#000"
+                                  Opacity="0.3"
+                                  BlurRadius="30"
+                                  ShadowDepth="10"/>
+            </Border.Effect>
+
+            <StackPanel HorizontalAlignment="Center">
+
+                <!-- أنيميشن الدوران -->
+                <Grid Width="50" Height="50"
+                      Margin="0,0,0,16"
+                      HorizontalAlignment="Center">
+
+                    <Ellipse Width="50" Height="50"
+                             Stroke="#F0F2F5"
+                             StrokeThickness="4"
+                             Fill="Transparent"/>
+
+                    <Ellipse Width="50" Height="50"
+                             Stroke="#1E3A5F"
+                             StrokeThickness="4"
+                             Fill="Transparent"
+                             StrokeDashArray="30 70"
+                             StrokeDashCap="Round">
+                        <Ellipse.RenderTransform>
+                            <RotateTransform
+                                x:Name="SpinnerRotation"
+                                CenterX="25"
+                                CenterY="25"/>
+                        </Ellipse.RenderTransform>
+                        <Ellipse.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="SpinnerRotation"
+                                            Storyboard.TargetProperty="Angle"
+                                            From="0" To="360"
+                                            Duration="0:0:1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Ellipse.Triggers>
+                    </Ellipse>
+                </Grid>
+
+                <!-- رسالة التحميل -->
+                <TextBlock
+                    Text="{Binding Message,
+                        ElementName=root}"
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Foreground="#2C3E50"
+                    FontFamily="Segoe UI"
+                    HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
+```
+
+---
+
+## 📁 Part 29-C — Notification Service
+
+```csharp
+// BlockFactory.Desktop/Services/NotificationService.cs
+
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Threading;
+
+namespace BlockFactory.Desktop.Services
+{
+    public class NotificationService
+    {
+        private static NotificationService? _instance;
+        public static NotificationService Instance =>
+            _instance ??= new NotificationService();
+
+        public ObservableCollection<AppNotification> Notifications { get; }
+            = new();
+
+        public event Action<AppNotification>? OnNotification;
+
+        private NotificationService() { }
+
+        // ─── إشعار نجاح ─────────────────────────────
+        public void Success(string message, string? title = null)
+        {
+            Show(new AppNotification
+            {
+                Title = title ?? "تم بنجاح",
+                Message = message,
+                Type = NotificationType.Success,
+                Icon = "✅",
+                BackgroundColor = "#EAFAF1",
+                ForegroundColor = "#27AE60"
+            });
+        }
+
+        // ─── إشعار خطأ ──────────────────────────────
+        public void Error(string message, string? title = null)
+        {
+            Show(new AppNotification
+            {
+                Title = title ?? "خطأ",
+                Message = message,
+                Type = NotificationType.Error,
+                Icon = "❌",
+                BackgroundColor = "#FDEDEC",
+                ForegroundColor = "#E74C3C"
+            });
+        }
+
+        // ─── إشعار تحذير ────────────────────────────
+        public void Warning(string message, string? title = null)
+        {
+            Show(new AppNotification
+            {
+                Title = title ?? "تنبيه",
+                Message = message,
+                Type = NotificationType.Warning,
+                Icon = "⚠️",
+                BackgroundColor = "#FEF9E7",
+                ForegroundColor = "#F39C12"
+            });
+        }
+
+        // ─── إشعار معلومات ──────────────────────────
+        public void Info(string message, string? title = null)
+        {
+            Show(new AppNotification
+            {
+                Title = title ?? "معلومة",
+                Message = message,
+                Type = NotificationType.Info,
+                Icon = "ℹ️",
+                BackgroundColor = "#EBF5FB",
+                ForegroundColor = "#2980B9"
+            });
+        }
+
+        private void Show(AppNotification notification)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Notifications.Insert(0, notification);
+                OnNotification?.Invoke(notification);
+
+                // حذف الإشعار بعد 4 ثواني
+                var timer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(4)
+                };
+                timer.Tick += (s, e) =>
+                {
+                    timer.Stop();
+                    Notifications.Remove(notification);
+                };
+                timer.Start();
+            });
+        }
+    }
+
+    public class AppNotification
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public NotificationType Type { get; set; }
+        public string Icon { get; set; } = string.Empty;
+        public string BackgroundColor { get; set; } = "#FFFFFF";
+        public string ForegroundColor { get; set; } = "#2C3E50";
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
+
+    public enum NotificationType
+    {
+        Success,
+        Error,
+        Warning,
+        Info
+    }
+}
+```
+
+---
+
+## 📁 Part 29-D — Notification Panel (XAML)
+
+```xml
+<!-- BlockFactory.Desktop/Controls/NotificationPanel.xaml -->
+
+<UserControl
+    x:Class="BlockFactory.Desktop.Controls.NotificationPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    HorizontalAlignment="Left"
+    VerticalAlignment="Bottom"
+    Margin="20"
+    FlowDirection="RightToLeft">
+
+    <ItemsControl
+        ItemsSource="{Binding Notifications,
+            Source={x:Static local:NotificationService.Instance}}">
+
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel/>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Border
+                    Background="{Binding BackgroundColor}"
+                    CornerRadius="10"
+                    Padding="14,10"
+                    Margin="0,0,0,8"
+                    MinWidth="300"
+                    MaxWidth="400">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#000"
+                                          Opacity="0.15"
+                                          BlurRadius="12"
+                                          ShadowDepth="4"/>
+                    </Border.Effect>
+
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <!-- ظهور تدريجي -->
+                                            <DoubleAnimation
+                                                Storyboard.TargetProperty="Opacity"
+                                                From="0" To="1"
+                                                Duration="0:0:0.3"/>
+                                            <!-- انزلاق من اليمين -->
+                                            <ThicknessAnimation
+                                                Storyboard.TargetProperty="Margin"
+                                                From="50,0,0,8"
+                                                To="0,0,0,8"
+                                                Duration="0:0:0.3"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- الأيقونة -->
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding Icon}"
+                                   FontSize="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+
+                        <!-- المحتوى -->
+                        <StackPanel Grid.Column="1">
+                            <TextBlock
+                                Text="{Binding Title}"
+                                FontSize="13"
+                                FontWeight="Bold"
+                                Foreground="{Binding ForegroundColor}"
+                                FontFamily="Segoe UI"/>
+                            <TextBlock
+                                Text="{Binding Message}"
+                                FontSize="12"
+                                Foreground="#555"
+                                FontFamily="Segoe UI"
+                                TextWrapping="Wrap"
+                                Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>
+```
+
+---
+
+## 📁 Part 29-E — تحديث MainShell لإضافة Overlay + Notifications
+
+```xml
+<!-- تحديث MainShell.xaml — إضافة الـ Controls -->
+
+<!-- في نهاية الـ Grid الرئيسي أضف: -->
+
+<!-- Loading Overlay -->
+<controls:LoadingOverlay
+    Grid.ColumnSpan="2"
+    IsLoading="{Binding IsGlobalLoading}"
+    Message="{Binding GlobalLoadingMessage}"
+    Panel.ZIndex="1000"/>
+
+<!-- Notification Panel -->
+<controls:NotificationPanel
+    Grid.Column="1"
+    Panel.ZIndex="999"
+    VerticalAlignment="Bottom"
+    HorizontalAlignment="Left"/>
+```
+
+---
+
+## 📁 Part 29-F — Additional Converters
+
+```csharp
+// BlockFactory.Desktop/Converters/AdditionalConverters.cs
+
+using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Media;
+
+namespace BlockFactory.Desktop.Converters
+{
+    // ─── Initials Converter ──────────────────────────
+    public class InitialsConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            var name = value?.ToString() ?? "";
+            if (string.IsNullOrEmpty(name)) return "?";
+
+            var parts = name.Split(' ',
+                StringSplitOptions.RemoveEmptyEntries);
+
+            return parts.Length >= 2
+                ? $"{parts[0][0]}{parts[1][0]}"
+                : name.Length >= 2
+                    ? name[..2]
+                    : name;
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Role Color Converter ────────────────────────
+    public class RoleColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            return value?.ToString() switch
+            {
+                "Admin"      => "#1E3A5F",
+                "Accountant" => "#2980B9",
+                _ => "#95A5A6"
+            };
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Role Name Converter ─────────────────────────
+    public class RoleNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            return value?.ToString() switch
+            {
+                "Admin"      => "🔑 مدير",
+                "Accountant" => "📊 محاسب",
+                _ => value?.ToString() ?? "-"
+            };
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Profit Color Converter ──────────────────────
+    public class ProfitColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            if (value is decimal d)
+                return d >= 0 ? "#EAFAF1" : "#FDEDEC";
+            return "#F8F9FA";
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Null To Visibility ──────────────────────────
+    public class NullToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            return value != null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Bool To Text Converter ──────────────────────
+    public class BoolToTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            bool boolValue = value is bool b && b;
+            var parts = parameter?.ToString()?.Split('|')
+                ?? new[] { "نعم", "لا" };
+
+            return boolValue
+                ? (parts.Length > 0 ? parts[0] : "نعم")
+                : (parts.Length > 1 ? parts[1] : "لا");
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Bool To Color Converter ─────────────────────
+    public class BoolToColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            bool boolValue = value is bool b && b;
+            var parts = parameter?.ToString()?.Split('|')
+                ?? new[] { "#27AE60", "#E74C3C" };
+
+            var colorStr = boolValue
+                ? (parts.Length > 0 ? parts[0] : "#27AE60")
+                : (parts.Length > 1 ? parts[1] : "#E74C3C");
+
+            return colorStr;
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Stock Color Converter ───────────────────────
+    public class StockColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            if (value is int qty)
+            {
+                if (qty <= 0) return "#E74C3C";
+                if (qty <= 100) return "#F39C12";
+                return "#27AE60";
+            }
+            return "#95A5A6";
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Bool To Width Converter ─────────────────────
+    public class BoolToWidthConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            bool boolValue = value is bool b && b;
+            var parts = parameter?.ToString()?.Split('|')
+                ?? new[] { "300", "0" };
+
+            var widthStr = boolValue
+                ? parts[0] : parts[1];
+
+            return double.TryParse(widthStr, out double width)
+                ? (object)new GridLength(width)
+                : new GridLength(0);
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Inverse Bool To Visibility ──────────────────
+    public class InverseBoolToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            bool boolValue = value is bool b && b;
+            return boolValue
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Count To Bool ───────────────────────────────
+    public class CountToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            if (value is int count) return count > 0;
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ─── Decimal To Bool ─────────────────────────────
+    public class DecimalToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            if (value is decimal d) return d > 0;
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            if (value is Visibility v)
+                return v == Visibility.Visible;
+            return false;
+        }
+    }
+}
+```
+
+---
+
+## 📁 Part 29-G — تسجيل كل الـ Converters في App.xaml
+
+```xml
+<!-- BlockFactory.Desktop/App.xaml — النسخة الكاملة -->
+
+<Application
+    x:Class="BlockFactory.Desktop.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters=
+        "clr-namespace:BlockFactory.Desktop.Converters">
+
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!-- ─── Converters ─── -->
+            <converters:BoolToVisibilityConverter
+                x:Key="BoolToVisibility"/>
+            <converters:StringToVisibilityConverter
+                x:Key="StringToVisibility"/>
+            <converters:InverseBoolConverter
+                x:Key="InverseBool"/>
+            <converters:LoadingTextConverter
+                x:Key="LoadingTextConverter"/>
+            <converters:InitialsConverter
+                x:Key="InitialsConverter"/>
+            <converters:RoleColorConverter
+                x:Key="RoleColorConverter"/>
+            <converters:RoleNameConverter
+                x:Key="RoleNameConverter"/>
+            <converters:ProfitColorConverter
+                x:Key="ProfitColorConverter"/>
+            <converters:NullToVisibilityConverter
+                x:Key="NullToVisibility"/>
+            <converters:BoolToTextConverter
+                x:Key="BoolToTextConverter"/>
+            <converters:BoolToColorConverter
+                x:Key="BoolToColorConverter"/>
+            <converters:StockColorConverter
+                x:Key="StockColorConverter"/>
+            <converters:BoolToWidthConverter
+                x:Key="BoolToWidth"/>
+            <converters:InverseBoolToVisibilityConverter
+                x:Key="InverseBoolToVisibility"/>
+            <converters:CountToBoolConverter
+                x:Key="CountToBool"/>
+            <converters:DecimalToBoolConverter
+                x:Key="DecimalToBool"/>
+
+            <!-- ─── Global Styles ─── -->
+            <Style TargetType="ScrollBar">
+                <Setter Property="Width" Value="6"/>
+                <Setter Property="Background"
+                        Value="Transparent"/>
+            </Style>
+
+            <Style TargetType="DataGridRow">
+                <Setter Property="Height" Value="42"/>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background"
+                                Value="#EBF5FB"/>
+                        <Setter Property="BorderBrush"
+                                Value="#2980B9"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background"
+                                Value="#F8FBFE"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style TargetType="DataGridCell">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background"
+                                Value="Transparent"/>
+                        <Setter Property="Foreground"
+                                Value="#2C3E50"/>
+                        <Setter Property="BorderBrush"
+                                Value="Transparent"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Global Font -->
+            <Style TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe UI"/>
+            </Style>
+
+            <Style TargetType="TextBox">
+                <Setter Property="FontFamily" Value="Segoe UI"/>
+            </Style>
+
+            <Style TargetType="ComboBox">
+                <Setter Property="FontFamily" Value="Segoe UI"/>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
+```
+
+---
+
+## 📁 Part 29-H — App.xaml.cs النهائي الكامل
+
+```csharp
+// BlockFactory.Desktop/App.xaml.cs
+
+using BlockFactory.Data;
+using BlockFactory.Data.Seeders;
+using BlockFactory.Desktop.Infrastructure;
+using BlockFactory.Desktop.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace BlockFactory.Desktop
+{
+    public partial class App : Application
+    {
+        public static IServiceProvider Services { get; private set; }
+            = null!;
+
+        protected override async void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            // ─── تسجيل معالج الأخطاء العام ───────────
+            GlobalExceptionHandler.Register();
+
+            // ─── إعداد الـ Dependency Injection ──────
+            Services = DependencyInjection.Configure();
+
+            // ─── تهيئة قاعدة البيانات ─────────────────
+            await InitializeDatabaseAsync();
+
+            // ─── تشغيل النسخ الاحتياطي التلقائي ──────
+            var backupService = GetService<BackupService>();
+            backupService.Start();
+
+            // ─── فتح نافذة تسجيل الدخول ───────────────
+            var loginWindow = new LoginWindow();
+            loginWindow.Show();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            // إيقاف الـ API عند الإغلاق
+            try
+            {
+                var apiService = GetService<ApiHostService>();
+                if (apiService.IsRunning)
+                    _ = apiService.StopAsync();
+            }
+            catch { }
+
+            base.OnExit(e);
+        }
+
+        public static T GetService<T>() where T : notnull
+            => Services.GetRequiredService<T>();
+
+        private static async Task InitializeDatabaseAsync()
+        {
+            try
+            {
+                using var scope = Services.CreateScope();
+                var context = scope.ServiceProvider
+                    .GetRequiredService<AppDbContext>();
+
+                // تطبيق الـ Migrations
+                await context.Database.MigrateAsync();
+
+                // تشغيل الـ Seeder
+                await DatabaseSeeder.SeedAsync(context);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"❌ خطأ في تهيئة قاعدة البيانات:\n\n{ex.Message}\n\n" +
+                    "تأكد من تثبيت SQL Server LocalDB وأعد المحاولة.",
+                    "خطأ في التشغيل",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    MessageBoxResult.OK,
+                    MessageBoxOptions.RightAlign |
+                    MessageBoxOptions.RtlReading);
+
+                Current.Shutdown(1);
+            }
+        }
+    }
+}
+```
+
+---
+
+## 📁 Part 29-I — Auto-Save Service
+
+```csharp
+// BlockFactory.Desktop/Services/AutoSaveService.cs
+
+using System.Windows.Threading;
+
+namespace BlockFactory.Desktop.Services
+{
+    /// <summary>
+    /// يحفظ أي تغييرات معلقة كل 30 ثانية
+    /// حماية من انقطاع الكهرباء
+    /// </summary>
+    public class AutoSaveService
+    {
+        private readonly DispatcherTimer _timer;
+        private readonly List<Func<Task>> _saveCallbacks = new();
+
+        public AutoSaveService()
+        {
+            _timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(30)
+            };
+            _timer.Tick += async (s, e) => await ExecuteSavesAsync();
+        }
+
+        public void Start() => _timer.Start();
+        public void Stop() => _timer.Stop();
+
+        public void Register(Func<Task> saveCallback)
+            => _saveCallbacks.Add(saveCallback);
+
+        public void Unregister(Func<Task> saveCallback)
+            => _saveCallbacks.Remove(saveCallback);
+
+        private async Task ExecuteSavesAsync()
+        {
+            foreach (var save in _saveCallbacks.ToList())
+            {
+                try { await save(); }
+                catch { }
+            }
+        }
+    }
+}
+```
+
+---
+
+## 📁 Part 29-J — تحديث NavigationService (إضافة كل الـ Views)
+
+```csharp
+// BlockFactory.Desktop/Services/NavigationService.cs
+// تحديث ResolveView لإضافة جميع الـ Views
+
+private UserControl? ResolveView(string viewName)
+{
+    return viewName switch
+    {
+        "Dashboard"   => _serviceProvider
+            .GetRequiredService<DashboardView>(),
+        "Orders"      => _serviceProvider
+            .GetRequiredService<OrdersView>(),
+        "NewOrder"    => _serviceProvider
+            .GetRequiredService<NewOrderView>(),
+        "Customers"   => _serviceProvider
+            .GetRequiredService<CustomersView>(),
+        "Pledges"     => _serviceProvider
+            .GetRequiredService<PledgesView>(),
+        "Production"  => _serviceProvider
+            .GetRequiredService<ProductionView>(),
+        "Inventory"   => _serviceProvider
+            .GetRequiredService<InventoryView>(),
+        "Suppliers"   => _serviceProvider
+            .GetRequiredService<SuppliersView>(),
+        "Workers"     => _serviceProvider
+            .GetRequiredService<WorkersView>(),
+        "Salaries"    => _serviceProvider
+            .GetRequiredService<SalariesView>(),
+        "Finance"     => _serviceProvider
+            .GetRequiredService<FinanceView>(),
+        "Reports"     => _serviceProvider
+            .GetRequiredService<ReportsView>(),
+        "Products"    => _serviceProvider
+            .GetRequiredService<ProductsView>(),
+        "Users"       => _serviceProvider
+            .GetRequiredService<UsersView>(),
+        "Settings"    => _serviceProvider
+            .GetRequiredService<SettingsView>(),
+        _ => null
+    };
+}
+```
+
+---
+
+## 📊 ملخص Part 29 الكامل
+
+```
+✅ Part 29-A — GlobalExceptionHandler
+│   ├── DispatcherUnhandledException
+│   ├── AppDomain.UnhandledException
+│   ├── TaskScheduler.UnobservedTaskException
+│   └── تسجيل الأخطاء في ملف Log يومي
+
+✅ Part 29-B — LoadingOverlay Control
+│   ├── Spinner Animation
+│   └── رسالة التحميل
+
+✅ Part 29-C — NotificationService
+│   ├── Success / Error / Warning / Info
+│   └── اختفاء تلقائي بعد 4 ثواني
+
+✅ Part 29-D — NotificationPanel XAML
+│   └── أنيميشن ظهور الإشعارات
+
+✅ Part 29-E — MainShell Update
+│   └── إضافة Overlay + Notifications
+
+✅ Part 29-F — 12 Converter كامل
+✅ Part 29-G — App.xaml Resources كامل
+✅ Part 29-H — App.xaml.cs النهائي
+✅ Part 29-I — AutoSaveService
+✅ Part 29-J — NavigationService كامل
+```
+
+---
+
+## ⏭️ الجزء الأخير
+
+| الجزء | المحتوى |
+|---|---|
+| **Part 30-A** | Installer Setup (Inno Setup Script) |
+| **Part 30-B** | Prerequisites Installer |
+| **Part 30-C** | Deployment Checklist |
+| **Part 30-D** | دليل التشغيل الأول |
+
+---
+
+> هل أكمل Part 30 الأخير الآن؟ 🚀

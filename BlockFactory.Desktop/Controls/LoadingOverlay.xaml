@@ -1,0 +1,27 @@
+<UserControl
+    x:Class="BlockFactory.Desktop.Controls.LoadingOverlay"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="root">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+
+    <Grid Visibility="{Binding IsLoading,
+                  ElementName=root,
+                  Converter={StaticResource BoolToVis}}">
+        <Border Background="#80000000"/>
+        <Border Background="{StaticResource ErpBrushCard}"
+                CornerRadius="12"
+                Padding="28,20"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MinWidth="200">
+            <TextBlock Text="{Binding Message, ElementName=root}"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"/>
+        </Border>
+    </Grid>
+</UserControl>

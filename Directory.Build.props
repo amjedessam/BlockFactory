@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- تفادي CS0006 (metadata file ...\ref\*.dll not found) بعد Clean أو بناء غير مكتمل -->
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  </PropertyGroup>
+</Project>

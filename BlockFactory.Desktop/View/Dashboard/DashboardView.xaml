@@ -1,0 +1,483 @@
+<UserControl
+    x:Class="BlockFactory.Desktop.Views.Dashboard.DashboardView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    FlowDirection="RightToLeft"
+    Background="{StaticResource ErpBrushPageBg}">
+
+    <UserControl.Resources>
+        <!-- ألوان الكاردات المميزة (لوحة التحكم) -->
+        <SolidColorBrush x:Key="Card1" Color="#1E3A5F"/>
+        <SolidColorBrush x:Key="Card2" Color="#E67E22"/>
+        <SolidColorBrush x:Key="Card3" Color="#E74C3C"/>
+        <SolidColorBrush x:Key="Card4" Color="#27AE60"/>
+        <SolidColorBrush x:Key="Card5" Color="#8E44AD"/>
+        <SolidColorBrush x:Key="Card6" Color="#2980B9"/>
+
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,0,20">
+
+            <!-- ─── رسالة الترحيب ─── -->
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock
+                        Text="{Binding WelcomeMessage}"
+                        FontSize="22"
+                        FontWeight="Bold"
+                        Foreground="{StaticResource ErpBrushTextPrimary}"
+                        FontFamily="Segoe UI"/>
+                    <TextBlock
+                        Text="{Binding TodayDate}"
+                        FontSize="13"
+                        Foreground="{StaticResource ErpBrushTextSecondary}"
+                        FontFamily="Segoe UI"
+                        Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center">
+                    <TextBlock
+                        Text="{Binding LastUpdated}"
+                        FontSize="11"
+                        Foreground="#BDC3C7"
+                        FontFamily="Segoe UI"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- ─── التنبيهات ─── -->
+            <ItemsControl
+                ItemsSource="{Binding Alerts}"
+                Margin="0,0,0,16"
+                Visibility="{Binding HasAlerts,
+                    Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,6"
+                                CornerRadius="8"
+                                Padding="14,10">
+                            <Border.Background>
+                                <SolidColorBrush
+                                    Color="{Binding Color}"
+                                    Opacity="0.1"/>
+                            </Border.Background>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding Icon}"
+                                           FontSize="16"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,10,0"/>
+
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock
+                                        Text="{Binding Title}"
+                                        FontSize="13"
+                                        FontWeight="Bold"
+                                        FontFamily="Segoe UI"
+                                        Foreground="{Binding Color}"/>
+                                    <TextBlock
+                                        Text="{Binding Message}"
+                                        FontSize="12"
+                                        FontFamily="Segoe UI"
+                                        Foreground="#555"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- ─── الصف الأول من الكاردات ─── -->
+            <UniformGrid Columns="4" Margin="0,0,0,16">
+
+                <!-- مبيعات اليوم -->
+                <Border Style="{StaticResource StatCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="مبيعات اليوم"
+                                       Style="{StaticResource StatTitle}"
+                                       Margin="0"/>
+
+                            <Border Grid.Column="1"
+                                    Width="36" Height="36"
+                                    Background="#EBF5FB"
+                                    CornerRadius="10">
+                                <TextBlock Text="💵"
+                                           FontSize="18"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+
+                        <TextBlock Grid.Row="1"
+                                   Style="{StaticResource StatNumber}"
+                                   Margin="0,10,0,0">
+                            <Run Text="{Binding TodaySales,
+                                StringFormat='{}{0:N0}'}"/>
+                            <Run Text=" ر.ي"
+                                 FontSize="13"
+                                 Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="2"
+                                   Margin="0,6,0,0"
+                                   FontSize="11"
+                                   Foreground="#27AE60"
+                                   FontFamily="Segoe UI">
+                            <Run Text="📋"/>
+                            <Run Text="{Binding TodayOrdersCount}"/>
+                            <Run Text=" طلب اليوم"/>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+
+                <!-- مبيعات الشهر -->
+                <Border Style="{StaticResource StatCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="مبيعات الشهر"
+                                       Style="{StaticResource StatTitle}"
+                                       Margin="0"/>
+                            <Border Grid.Column="1"
+                                    Width="36" Height="36"
+                                    Background="#FEF9E7"
+                                    CornerRadius="10">
+                                <TextBlock Text="📈"
+                                           FontSize="18"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+
+                        <TextBlock Grid.Row="1"
+                                   Style="{StaticResource StatNumber}"
+                                   Margin="0,10,0,0">
+                            <Run Text="{Binding MonthSales,
+                                StringFormat='{}{0:N0}'}"/>
+                            <Run Text=" ر.ي"
+                                 FontSize="13"
+                                 Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="2"
+                                   Margin="0,6,0,0"
+                                   FontSize="11"
+                                   Foreground="#E67E22"
+                                   FontFamily="Segoe UI">
+                            <Run Text="🏭"/>
+                            <Run Text="{Binding TodayProduction}"/>
+                            <Run Text=" بلكة أُنتجت اليوم"/>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+
+                <!-- ديون العملاء -->
+                <Border Style="{StaticResource StatCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="ديون العملاء"
+                                       Style="{StaticResource StatTitle}"
+                                       Margin="0"/>
+                            <Border Grid.Column="1"
+                                    Width="36" Height="36"
+                                    Background="#FDEDEC"
+                                    CornerRadius="10">
+                                <TextBlock Text="💳"
+                                           FontSize="18"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+
+                        <TextBlock Grid.Row="1"
+                                   Style="{StaticResource StatNumber}"
+                                   Foreground="#E74C3C"
+                                   Margin="0,10,0,0">
+                            <Run Text="{Binding TotalCustomerDebt,
+                                StringFormat='{}{0:N0}'}"/>
+                            <Run Text=" ر.ي"
+                                 FontSize="13"
+                                 Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="2"
+                                   Margin="0,6,0,0"
+                                   FontSize="11"
+                                   Foreground="#E74C3C"
+                                   FontFamily="Segoe UI">
+                            <Run Text="🔔"/>
+                            <Run Text="{Binding PledgesDueSoonCount}"/>
+                            <Run Text=" رهن يستحق قريباً"/>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+
+                <!-- الصندوق والمحافظ -->
+                <Border Style="{StaticResource StatCard}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="الصندوق النقدي"
+                                       Style="{StaticResource StatTitle}"
+                                       Margin="0"/>
+                            <Border Grid.Column="1"
+                                    Width="36" Height="36"
+                                    Background="#EAFAF1"
+                                    CornerRadius="10">
+                                <TextBlock Text="💰"
+                                           FontSize="18"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+
+                        <TextBlock Grid.Row="1"
+                                   Style="{StaticResource StatNumber}"
+                                   Foreground="#27AE60"
+                                   Margin="0,10,0,0">
+                            <Run Text="{Binding CashBalance,
+                                StringFormat='{}{0:N0}'}"/>
+                            <Run Text=" ر.ي"
+                                 FontSize="13"
+                                 Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="2"
+                                   Margin="0,6,0,0"
+                                   FontSize="11"
+                                   Foreground="#2980B9"
+                                   FontFamily="Segoe UI">
+                            <Run Text="📱"/>
+                            <Run Text="{Binding TotalWalletsBalance,
+                                StringFormat='{}{0:N0}'}"/>
+                            <Run Text=" ر.ي محافظ"/>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+            </UniformGrid>
+
+            <!-- ─── الصف الثاني — جدول الطلبات + كارد الربح ─── -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="280"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- جدول آخر الطلبات -->
+                <Border Grid.Column="0"
+                        Style="{StaticResource StatCard}"
+                        Margin="0,0,12,0"
+                        Padding="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- عنوان الجدول -->
+                        <Border Grid.Row="0"
+                                Padding="20,14"
+                                BorderBrush="{StaticResource ErpBrushBorder}"
+                                BorderThickness="0,0,0,1">
+                            <TextBlock Text="🧾 آخر الطلبات"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource ErpBrushTextPrimary}"
+                                       FontFamily="Segoe UI"/>
+                        </Border>
+
+                        <!-- الجدول -->
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding RecentOrders}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  Background="{StaticResource ErpBrushCard}"
+                                  RowBackground="{StaticResource ErpBrushCard}"
+                                  AlternatingRowBackground="{StaticResource ErpBrushRowAlt}"
+                                  HorizontalGridLinesBrush="{StaticResource ErpBrushGridLine}"
+                                  CanUserResizeRows="False"
+                                  SelectionMode="Single"
+                                  FontFamily="Segoe UI"
+                                  FontSize="13">
+
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="#F8F9FA"/>
+                                    <Setter Property="Foreground" Value="{StaticResource ErpBrushTextSecondary}"/>
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="Padding" Value="12,8"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Header="رقم الطلب"
+                                    Binding="{Binding OrderNumber}"
+                                    Width="120"/>
+                                <DataGridTextColumn
+                                    Header="العميل"
+                                    Binding="{Binding CustomerName}"
+                                    Width="*"/>
+                                <DataGridTextColumn
+                                    Header="المبلغ"
+                                    Binding="{Binding TotalAmount,
+                                        StringFormat='{}{0:N0} ر.ي'}"
+                                    Width="130"/>
+                                <DataGridTextColumn
+                                    Header="الدفع"
+                                    Binding="{Binding PaymentType}"
+                                    Width="90"/>
+
+                                <!-- عمود الحالة ملون -->
+                                <DataGridTemplateColumn
+                                    Header="الحالة"
+                                    Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="6"
+                                                    Padding="8,3"
+                                                    HorizontalAlignment="Center">
+                                                <Border.Background>
+                                                    <SolidColorBrush
+                                                        Color="{Binding StatusColor}"
+                                                        Opacity="0.15"/>
+                                                </Border.Background>
+                                                <TextBlock
+                                                    Text="{Binding Status}"
+                                                    FontSize="11"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{Binding StatusColor}"
+                                                    HorizontalAlignment="Center"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+
+                <!-- كارد الربح الشهري -->
+                <StackPanel Grid.Column="1">
+
+                    <!-- صافي الربح -->
+                    <Border Style="{StaticResource StatCard}"
+                            Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="صافي ربح الشهر"
+                                       Style="{StaticResource StatTitle}"
+                                       Margin="0"/>
+                            <TextBlock Margin="0,10,0,0"
+                                       Style="{StaticResource StatNumber}">
+                                <TextBlock.Foreground>
+                                    <SolidColorBrush
+                                        Color="{Binding IsNetProfitPositive,
+                                            Converter={StaticResource BoolToColorConverter},
+                                            ConverterParameter='#27AE60|#E74C3C'}"/>
+                                </TextBlock.Foreground>
+                                <Run Text="{Binding NetProfit,
+                                    StringFormat='{}{0:N0}'}"/>
+                                <Run Text=" ر.ي"
+                                     FontSize="13"
+                                     Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                            </TextBlock>
+                            <TextBlock
+                                Margin="0,6,0,0"
+                                FontSize="11"
+                                FontFamily="Segoe UI"
+                                Foreground="{Binding IsNetProfitPositive,
+                                    Converter={StaticResource BoolToTextConverter},
+                                    ConverterParameter='#27AE60|#E74C3C'}">
+                                <Run Text="{Binding IsNetProfitPositive,
+                                    Converter={StaticResource BoolToTextConverter},
+                                    ConverterParameter='✅ ربح|❌ خسارة'}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- المخزون المنخفض -->
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <TextBlock Text="📦 تنبيهات المخزون"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource ErpBrushTextPrimary}"
+                                       FontFamily="Segoe UI"/>
+
+                            <TextBlock Margin="0,12,0,0"
+                                       Style="{StaticResource StatNumber}"
+                                       Foreground="#F39C12">
+                                <Run Text="{Binding LowStockCount}"/>
+                            </TextBlock>
+
+                            <TextBlock
+                                Text="منتج أو مادة خام بحاجة لتعبئة"
+                                Style="{StaticResource StatTitle}"
+                                Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

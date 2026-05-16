@@ -1,0 +1,186 @@
+<UserControl
+    x:Class="BlockFactory.Desktop.Views.Settings.UsersView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    FlowDirection="RightToLeft"
+    Background="{StaticResource ErpBrushPageBg}"
+    Loaded="UserControl_Loaded">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- عنوان + شريط أدوات -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="إدارة المستخدمين"
+                       FontSize="20" FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource ErpBrushNavSidebar}"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="🔄 تحديث القائمة"
+                        Command="{Binding LoadCommand}"
+                        Height="36" Padding="14,0" Margin="0,0,8,0"
+                        Background="{StaticResource ErpBrushPageBg}"
+                        BorderBrush="{StaticResource ErpBrushBorderInput}"
+                        BorderThickness="1"
+                        FontFamily="Segoe UI" FontSize="13"
+                        Cursor="Hand"/>
+                <Button Content="➕ إضافة محاسب"
+                        Command="{Binding ShowAddAccountantFormCommand}"
+                        Height="36" Padding="16,0"
+                        Background="#E67E22"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontFamily="Segoe UI" FontSize="13"
+                        FontWeight="Bold"
+                        Cursor="Hand"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- رسائل -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+            <Border Background="#FDEDEC" CornerRadius="8" Padding="12,8"
+                    Visibility="{Binding HasError,
+                        Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="#C0392B"
+                           FontFamily="Segoe UI" FontSize="13"
+                           TextWrapping="Wrap"/>
+            </Border>
+            <Border Background="#E8F8F0" CornerRadius="8" Padding="12,8"
+                    Visibility="{Binding SuccessMessage,
+                        Converter={StaticResource StringToVisibility}}">
+                <TextBlock Text="{Binding SuccessMessage}"
+                           Foreground="#1E8449"
+                           FontFamily="Segoe UI" FontSize="13"
+                           TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="{Binding IsAccountantFormVisible,
+                    Converter={StaticResource BoolToWidth},
+                    ConverterParameter='360|0'}"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Background="{StaticResource ErpBrushCard}"
+                    CornerRadius="12" Padding="0"
+                    Margin="0,0,12,0">
+                <DataGrid ItemsSource="{Binding Users}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal"
+                          RowHeight="40"
+                          BorderThickness="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="الاسم" Binding="{Binding FullName}" Width="*"/>
+                        <DataGridTextColumn Header="اسم الدخول" Binding="{Binding Username}" Width="140"/>
+                        <DataGridTextColumn Header="الدور" Binding="{Binding RoleName}" Width="120"/>
+                        <DataGridCheckBoxColumn Header="نشط" Binding="{Binding IsActive}" Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- نموذج إضافة محاسب -->
+            <Border x:Name="AccountantFormBorder"
+                    Grid.Column="1"
+                    Background="{StaticResource ErpBrushCard}"
+                    CornerRadius="12" Padding="16"
+                    IsVisibleChanged="AccountantForm_IsVisibleChanged">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="حساب محاسب جديد"
+                                   FontSize="16" FontWeight="Bold"
+                                   Foreground="{StaticResource ErpBrushNavSidebar}"
+                                   FontFamily="Segoe UI"
+                                   Margin="0,0,0,4"/>
+                        <TextBlock Text="يُنشئ المدير الحساب؛ يسجّل المحاسب الدخول بنفس اسم المستخدم وكلمة المرور التي تُدخل هنا، وتُطبَّق عليه صلاحيات المحاسب في النظام."
+                                   FontSize="12"
+                                   Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,16"
+                                   FontFamily="Segoe UI"/>
+
+                        <TextBlock Text="الاسم الكامل"
+                                   FontFamily="Segoe UI" FontSize="12"
+                                   Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding AccountantFullName,
+                            UpdateSourceTrigger=PropertyChanged}"
+                                 Height="36" Padding="10,0"
+                                 FontFamily="Segoe UI" FontSize="13"
+                                 Margin="0,0,0,12"
+                                 BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                 BorderThickness="1.5"/>
+
+                        <TextBlock Text="اسم المستخدم (لتسجيل الدخول)"
+                                   FontFamily="Segoe UI" FontSize="12"
+                                   Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding AccountantUsername,
+                            UpdateSourceTrigger=PropertyChanged}"
+                                 Height="36" Padding="10,0"
+                                 FontFamily="Segoe UI" FontSize="13"
+                                 Margin="0,0,0,12"
+                                 BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                 BorderThickness="1.5"/>
+
+                        <TextBlock Text="كلمة المرور"
+                                   FontFamily="Segoe UI" FontSize="12"
+                                   Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   Margin="0,0,0,4"/>
+                        <PasswordBox x:Name="AccountantPasswordBox"
+                                     Height="36"
+                                     Padding="10,0"
+                                     FontFamily="Segoe UI" FontSize="13"
+                                     Margin="0,0,0,6"
+                                     BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                     BorderThickness="1.5"
+                                     PasswordChanged="AccountantPassword_OnPasswordChanged"/>
+                        <TextBlock Text="6 أحرف على الأقل"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   FontFamily="Segoe UI"
+                                   Margin="0,0,0,16"/>
+
+                        <Button Content="💾 حفظ وإنشاء الحساب"
+                                Command="{Binding SaveAccountantCommand}"
+                                CommandParameter="{Binding ElementName=AccountantPasswordBox}"
+                                Height="40"
+                                Background="#27AE60"
+                                Foreground="White"
+                                BorderThickness="0"
+                                FontFamily="Segoe UI" FontSize="13"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"
+                                Margin="0,0,0,8"/>
+
+                        <Button Content="إلغاء"
+                                Click="CancelAccountantForm_Click"
+                                Height="36"
+                                Background="{StaticResource ErpBrushPageBg}"
+                                Foreground="{StaticResource ErpBrushTextSecondary}"
+                                BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                BorderThickness="1"
+                                FontFamily="Segoe UI" FontSize="13"
+                                Cursor="Hand"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,309 @@
+<Window x:Class="BlockFactory.Desktop.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="نظام إدارة مصنع البلوك"
+        Height="580" Width="420"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        FlowDirection="RightToLeft">
+
+    <Window.Resources>
+        <!-- المحوّلات من App؛ أنماط خاصة بالدخول فقط -->
+
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{StaticResource ErpBrushCard}"/>
+            <Setter Property="Foreground" Value="{StaticResource ErpBrushTextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ErpBrushBorderInput}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush"
+                                        Value="{StaticResource ErpBrushAccent}"/>
+                                <Setter Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernPasswordBox" TargetType="PasswordBox">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{StaticResource ErpBrushCard}"/>
+            <Setter Property="Foreground" Value="{StaticResource ErpBrushTextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ErpBrushBorderInput}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush"
+                                        Value="{StaticResource ErpBrushAccent}"/>
+                                <Setter Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="LoginButton" TargetType="Button">
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Foreground" Value="{StaticResource ErpBrushCard}"/>
+            <Setter Property="Background" Value="{StaticResource ErpBrushAccent}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="10"
+                                x:Name="border">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="#D35400"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="#BA4A00"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="#BDC3C7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- الحاوية الرئيسية مع ظل -->
+    <Border CornerRadius="16"
+            Background="{StaticResource ErpBrushCard}"
+            Margin="15">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000"
+                              Opacity="0.2"
+                              BlurRadius="20"
+                              ShadowDepth="5"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- شريط العنوان -->
+                <RowDefinition Height="*"/>
+                <!-- المحتوى -->
+                <RowDefinition Height="Auto"/>
+                <!-- الفوتر -->
+            </Grid.RowDefinitions>
+
+            <!-- ─── شريط العنوان (قابل للسحب) ─── -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource ErpBrushNavSidebar}"
+                    CornerRadius="16,16,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid Margin="20,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- اسم التطبيق -->
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="🏭 مصنع البلوك"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   FontFamily="Segoe UI"/>
+                        <TextBlock Text="نظام الإدارة المتكامل"
+                                   FontSize="11"
+                                   Foreground="#BDC3C7"
+                                   FontFamily="Segoe UI"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- زر الإغلاق -->
+                    <Button Grid.Column="1"
+                            Content="✕"
+                            Width="30" Height="30"
+                            FontSize="14"
+                            Foreground="White"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Click="CloseButton_Click"
+                            VerticalAlignment="Top">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="5">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource ErpBrushDanger}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- ─── المحتوى الرئيسي ─── -->
+            <StackPanel Grid.Row="1"
+                        Margin="40,30,40,20"
+                        VerticalAlignment="Center">
+
+                <!-- أيقونة المصنع -->
+
+                <!-- عنوان -->
+                <!-- أيقونة المصنع -->
+
+                <!-- عنوان -->
+                <TextBlock Text="تسجيل الدخول"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource ErpBrushTextPrimary}"
+                           HorizontalAlignment="Center"
+                           FontFamily="Segoe UI"
+                           Margin="0,0,0,5"/>
+
+                <TextBlock Text="{Binding CurrentDate}"
+                           FontSize="12"
+                           Foreground="{StaticResource ErpBrushTextSecondary}"
+                           HorizontalAlignment="Center"
+                           FontFamily="Segoe UI"
+                           Margin="0,0,0,30"/>
+
+                <!-- حقل اسم المستخدم -->
+                <TextBlock Text="اسم المستخدم"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource ErpBrushTextPrimary}"
+                           FontFamily="Segoe UI"
+                           Margin="0,0,0,6"/>
+
+                <TextBox x:Name="UsernameBox"
+                         Style="{StaticResource ModernTextBox}"
+                         Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="InputField_KeyDown"/>
+
+                <!-- حقل كلمة المرور -->
+                <TextBlock Text="كلمة المرور"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource ErpBrushTextPrimary}"
+                           FontFamily="Segoe UI"
+                           Margin="0,16,0,6"/>
+
+                <PasswordBox x:Name="PasswordBox"
+                             Style="{StaticResource ModernPasswordBox}"
+                             KeyDown="PasswordBox_KeyDown"/>
+
+                <!-- رسالة الخطأ -->
+                <Border Background="#FDEDEC"
+                        CornerRadius="8"
+                        Padding="12,8"
+                        Margin="0,12,0,0"
+                        Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               FontSize="13"
+                               Foreground="{StaticResource ErpBrushDanger}"
+                               FontFamily="Segoe UI"
+                               TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- رسالة النجاح -->
+                <Border Background="#EAFAF1"
+                        CornerRadius="8"
+                        Padding="12,8"
+                        Margin="0,12,0,0"
+                        Visibility="{Binding SuccessMessage, Converter={StaticResource StringToVisibility}}">
+                    <TextBlock Text="{Binding SuccessMessage}"
+                               FontSize="13"
+                               Foreground="{StaticResource ErpBrushSuccess}"
+                               FontFamily="Segoe UI"/>
+                </Border>
+
+                <!-- زر الدخول -->
+                <Button Style="{StaticResource LoginButton}"
+                        Content="{Binding IsLoading, ConverterParameter=دخول|جاري التحقق..., Converter={StaticResource LoadingTextConverter}}"
+                        Command="{Binding LoginCommand}"
+                        CommandParameter="{Binding ElementName=PasswordBox}"
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBool}}"
+                        Margin="0,20,0,0"/>
+
+            </StackPanel>
+
+            <!-- ─── الفوتر ─── -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource ErpBrushSoftFooter}"
+                    CornerRadius="0,0,16,16"
+                    Padding="20,12">
+                <TextBlock HorizontalAlignment="Center"
+                           FontSize="11"
+                           Foreground="{StaticResource ErpBrushTextSecondary}"
+                           FontFamily="Segoe UI">
+                    <Run Text="{Binding AppVersion}"/>
+                    <Run Text=" · جميع الحقوق محفوظة"/>
+                </TextBlock>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

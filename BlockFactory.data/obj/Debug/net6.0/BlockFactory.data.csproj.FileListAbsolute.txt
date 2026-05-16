@@ -1,0 +1,15 @@
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\bin\Debug\net6.0\BlockFactory.data.deps.json
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\bin\Debug\net6.0\BlockFactory.data.runtimeconfig.json
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\bin\Debug\net6.0\BlockFactory.data.dll
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\bin\Debug\net6.0\BlockFactory.data.pdb
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\bin\Debug\net6.0\BlockFactory.Core.dll
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\bin\Debug\net6.0\BlockFactory.Core.pdb
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.csproj.AssemblyReference.cache
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.AssemblyInfoInputs.cache
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.AssemblyInfo.cs
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.csproj.CoreCompileInputs.cache
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.csproj.CopyComplete
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.dll
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.pdb
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.genruntimeconfig.cache

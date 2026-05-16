@@ -1,0 +1,991 @@
+<UserControl
+    x:Class="BlockFactory.Desktop.Views.Finance.FinanceView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    FlowDirection="RightToLeft"
+    Background="{StaticResource ErpBrushPageBg}"
+    Loaded="UserControl_Loaded">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Date Filter -->
+            <RowDefinition Height="Auto"/>
+            <!-- Summary Cards -->
+            <RowDefinition Height="*"/>
+            <!-- TabControl -->
+        </Grid.RowDefinitions>
+
+        <!-- ─── فلتر التاريخ ─── -->
+        <Border Grid.Row="0" Background="{StaticResource ErpBrushCard}"
+                CornerRadius="12" Padding="16,12"
+                Margin="0,0,0,14">
+            <Border.Effect>
+                <DropShadowEffect Color="#000" Opacity="0.05"
+                                  BlurRadius="8" ShadowDepth="1"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- اختيار الفترة -->
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="📅 من:"
+                               FontSize="13" FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <DatePicker
+                        SelectedDate="{Binding FromDate}"
+                        Height="36" Width="140"
+                        FontFamily="Segoe UI"
+                        Margin="0,0,12,0"/>
+                    <TextBlock Text="إلى:"
+                               FontSize="13" FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <DatePicker
+                        SelectedDate="{Binding ToDate}"
+                        Height="36" Width="140"
+                        FontFamily="Segoe UI"
+                        Margin="0,0,12,0"/>
+                    <Button Content="🔍 عرض"
+                            Command="{Binding LoadCommand}"
+                            Style="{StaticResource ErpPrimaryDarkButton}"
+                            MinHeight="36"
+                            Padding="14,0"
+                            Margin="0,0,12,0"/>
+                </StackPanel>
+
+                <!-- عنوان الفترة -->
+                <TextBlock Grid.Column="1"
+                           FontSize="14" FontWeight="Bold"
+                           Foreground="{StaticResource ErpBrushTextPrimary}"
+                           FontFamily="Segoe UI"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                    <Run Text="الفترة من"/>
+                    <Run Text="{Binding FromDate, StringFormat='dd/MM/yyyy'}"/>
+                    <Run Text="إلى"/>
+                    <Run Text="{Binding ToDate, StringFormat='dd/MM/yyyy'}"/>
+                </TextBlock>
+            </Grid>
+        </Border>
+
+        <!-- ─── بطاقات الملخص ─── -->
+        <UniformGrid Grid.Row="1" Columns="5"
+                     Margin="0,0,0,14">
+
+            <!-- الإيرادات -->
+            <Border Background="{StaticResource ErpBrushNavSidebar}" CornerRadius="12"
+                    Padding="16,12" Margin="0,0,10,0">
+                <StackPanel>
+                    <TextBlock Text="إجمالي الإيرادات"
+                               FontSize="11" Foreground="#BDC3C7"
+                               FontFamily="Segoe UI"/>
+                    <TextBlock FontSize="20" FontWeight="Bold"
+                               Foreground="White"
+                               FontFamily="Segoe UI"
+                               Margin="0,8,0,0">
+                        <Run Text="{Binding Summary.TotalRevenue,
+                            FallbackValue='0',
+                            StringFormat='{}{0:N0}'}"/>
+                        <Run Text=" ر.ي" FontSize="12"
+                             Foreground="#BDC3C7"/>
+                    </TextBlock>
+                    <TextBlock Text="💵 مبيعات مُحصَّلة"
+                               FontSize="10" Foreground="#BDC3C7"
+                               FontFamily="Segoe UI"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- المصروفات -->
+            <Border Background="{StaticResource ErpBrushCard}" CornerRadius="12"
+                    Padding="16,12" Margin="0,0,10,0">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000" Opacity="0.05"
+                                      BlurRadius="8" ShadowDepth="1"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="إجمالي المصروفات"
+                               FontSize="11" Foreground="{StaticResource ErpBrushTextSecondary}"
+                               FontFamily="Segoe UI"/>
+                    <TextBlock FontSize="20" FontWeight="Bold"
+                               Foreground="#E74C3C"
+                               FontFamily="Segoe UI"
+                               Margin="0,8,0,0">
+                        <Run Text="{Binding Summary.TotalExpenses,
+                            FallbackValue='0',
+                            StringFormat='{}{0:N0}'}"/>
+                        <Run Text=" ر.ي" FontSize="12"
+                             Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                    </TextBlock>
+                    <TextBlock Text="📋 مصروفات الفترة"
+                               FontSize="10" Foreground="{StaticResource ErpBrushTextSecondary}"
+                               FontFamily="Segoe UI"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- صافي الربح -->
+            <Border CornerRadius="12" Padding="16,12"
+                    Margin="0,0,10,0">
+                <Border.Background>
+                    <SolidColorBrush Color="{Binding Summary.NetProfit,
+                        Converter={StaticResource ProfitColorConverter}}"/>
+                </Border.Background>
+                <Border.Effect>
+                    <DropShadowEffect Color="#000" Opacity="0.05"
+                                      BlurRadius="8" ShadowDepth="1"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="صافي الربح"
+                               FontSize="11" Foreground="{StaticResource ErpBrushTextSecondary}"
+                               FontFamily="Segoe UI"/>
+                    <TextBlock FontSize="20" FontWeight="Bold"
+                               FontFamily="Segoe UI"
+                               Margin="0,8,0,0">
+                        <TextBlock.Foreground>
+                            <SolidColorBrush Color="{Binding Summary.NetProfit,
+                                Converter={StaticResource ProfitTextColorConverter}}"/>
+                        </TextBlock.Foreground>
+                        <Run Text="{Binding Summary.NetProfit,
+                            FallbackValue='0',
+                            StringFormat='{}{0:N0}'}"/>
+                        <Run Text=" ر.ي" FontSize="12"
+                             Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                    </TextBlock>
+                    <TextBlock FontSize="10" Foreground="{StaticResource ErpBrushTextSecondary}"
+                               FontFamily="Segoe UI"
+                               Margin="0,4,0,0"
+                               Text="{Binding Summary.NetProfit,
+                                   Converter={StaticResource ProfitLabelConverter}}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- الصندوق -->
+            <Border Background="{StaticResource ErpBrushCard}" CornerRadius="12"
+                    Padding="16,12" Margin="0,0,10,0">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000" Opacity="0.05"
+                                      BlurRadius="8" ShadowDepth="1"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="الصندوق النقدي"
+                               FontSize="11" Foreground="{StaticResource ErpBrushTextSecondary}"
+                               FontFamily="Segoe UI"/>
+                    <TextBlock FontSize="20" FontWeight="Bold"
+                               Foreground="#27AE60"
+                               FontFamily="Segoe UI"
+                               Margin="0,8,0,0">
+                        <Run Text="{Binding Summary.CashBalance,
+                            FallbackValue='0',
+                            StringFormat='{}{0:N0}'}"/>
+                        <Run Text=" ر.ي" FontSize="12"
+                             Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                    </TextBlock>
+                    <TextBlock FontSize="10" Foreground="{StaticResource ErpBrushTextSecondary}"
+                               FontFamily="Segoe UI"
+                               Margin="0,4,0,0">
+                        <Run Text="📱 محافظ:"/>
+                        <Run Text="{Binding TotalWalletsBalance,
+                            StringFormat='{}{0:N0}'}"/>
+                        <Run Text=" ر.ي"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- الديون -->
+            <Border Background="{StaticResource ErpBrushCard}" CornerRadius="12"
+                    Padding="16,12">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000" Opacity="0.05"
+                                      BlurRadius="8" ShadowDepth="1"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="ديون العملاء"
+                               FontSize="11" Foreground="{StaticResource ErpBrushTextSecondary}"
+                               FontFamily="Segoe UI"/>
+                    <TextBlock FontSize="20" FontWeight="Bold"
+                               Foreground="#E74C3C"
+                               FontFamily="Segoe UI"
+                               Margin="0,8,0,0">
+                        <Run Text="{Binding Summary.TotalCustomerDebt,
+                            FallbackValue='0',
+                            StringFormat='{}{0:N0}'}"/>
+                        <Run Text=" ر.ي" FontSize="12"
+                             Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                    </TextBlock>
+                    <TextBlock FontSize="10" Foreground="{StaticResource ErpBrushTextSecondary}"
+                               FontFamily="Segoe UI"
+                               Margin="0,4,0,0">
+                        <Run Text="🏢 للموردين:"/>
+                        <Run Text="{Binding Summary.TotalSupplierDebt,
+                            StringFormat='{}{0:N0}'}"/>
+                        <Run Text=" ر.ي"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <!-- ─── TabControl ─── -->
+        <TabControl Grid.Row="2"
+                    SelectedIndex="{Binding ActiveTab}"
+                    Background="Transparent"
+                    BorderThickness="0">
+
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="FontFamily" Value="Segoe UI"/>
+                    <Setter Property="FontSize" Value="13"/>
+                    <Setter Property="Padding" Value="14,8"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                </Style>
+            </TabControl.Resources>
+
+            <!-- ══ المصروفات ══ -->
+            <TabItem Header="📋 المصروفات">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="{Binding IsExpenseFormVisible,
+                            Converter={StaticResource BoolToWidth},
+                            ConverterParameter='320|0'}"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Background="{StaticResource ErpBrushCard}" CornerRadius="12"
+                            Margin="0,12,12,0">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#000" Opacity="0.05"
+                                              BlurRadius="8" ShadowDepth="1"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Header -->
+                            <Border Grid.Row="0" Padding="16,12"
+                                    BorderBrush="{StaticResource ErpBrushBorder}"
+                                    BorderThickness="0,0,0,1">
+                                <Grid>
+                                    <TextBlock
+                                        Text="📋 سجل المصروفات"
+                                        FontSize="14" FontWeight="Bold"
+                                        Foreground="{StaticResource ErpBrushTextPrimary}"
+                                        FontFamily="Segoe UI"
+                                        VerticalAlignment="Center"/>
+
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Left">
+                                        <Button
+                                            Content="🗑 حذف"
+                                            Command="{Binding DeleteExpenseCommand}"
+                                            Visibility="{Binding CanDeleteExpense,
+                                                Converter={StaticResource BoolToVisibility}}"
+                                            Height="32" Padding="10,0"
+                                            Margin="0,0,8,0"
+                                            Background="#E74C3C"
+                                            Foreground="White"
+                                            BorderThickness="0"
+                                            FontFamily="Segoe UI"
+                                            FontSize="12"
+                                            Cursor="Hand"/>
+                                        <Button
+                                            Content="➕ مصروف جديد"
+                                            Command="{Binding ShowExpenseFormCommand}"
+                                            Height="32" Padding="12,0"
+                                            Background="#E67E22"
+                                            Foreground="White"
+                                            BorderThickness="0"
+                                            FontFamily="Segoe UI"
+                                            FontSize="12"
+                                            FontWeight="Bold"
+                                            Cursor="Hand"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- DataGrid -->
+                            <DataGrid Grid.Row="1"
+                                      ItemsSource="{Binding Expenses}"
+                                      SelectedItem="{Binding SelectedExpense}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="{StaticResource ErpBrushGridLine}"
+                                      HeadersVisibility="Column"
+                                      BorderThickness="0"
+                                      Background="{StaticResource ErpBrushCard}"
+                                      RowBackground="{StaticResource ErpBrushCard}"
+                                      AlternatingRowBackground="{StaticResource ErpBrushRowAlt}"
+                                      CanUserResizeRows="False"
+                                      FontFamily="Segoe UI"
+                                      FontSize="13"
+                                      RowHeight="42">
+
+                                <DataGrid.ColumnHeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background"
+                                                Value="#F8F9FA"/>
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource ErpBrushTextSecondary}"/>
+                                        <Setter Property="FontSize"
+                                                Value="12"/>
+                                        <Setter Property="Padding"
+                                                Value="14,10"/>
+                                        <Setter Property="BorderThickness"
+                                                Value="0"/>
+                                    </Style>
+                                </DataGrid.ColumnHeaderStyle>
+
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="التاريخ"
+                                        Binding="{Binding ExpenseDate,
+                                            StringFormat='dd/MM/yyyy'}"
+                                        Width="100"/>
+
+                                    <!-- الصنف مع أيقونة -->
+                                    <DataGridTemplateColumn
+                                        Header="الصنف" Width="120">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel
+                                                    Orientation="Horizontal"
+                                                    VerticalAlignment="Center"
+                                                    Margin="10,0">
+                                                    <TextBlock
+                                                        Text="{Binding CategoryIcon}"
+                                                        FontSize="14"
+                                                        Margin="0,0,6,0"/>
+                                                    <TextBlock
+                                                        Text="{Binding Category}"
+                                                        FontSize="12"
+                                                        FontFamily="Segoe UI"
+                                                        Foreground="#555"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTextColumn Header="الوصف"
+                                        Binding="{Binding Description}"
+                                        Width="*"/>
+
+                                    <DataGridTemplateColumn
+                                        Header="المبلغ" Width="120">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock
+                                                    FontWeight="Bold"
+                                                    FontSize="13"
+                                                    Foreground="#E74C3C"
+                                                    VerticalAlignment="Center"
+                                                    Margin="14,0"
+                                                    FontFamily="Segoe UI">
+                                                    <Run Text="{Binding Amount,
+                                                        StringFormat='{}{0:N0}'}"/>
+                                                    <Run Text=" ر.ي" FontSize="11"
+                                                         Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- دوري -->
+                                    <DataGridTemplateColumn Width="60">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock
+                                                    Text="🔄"
+                                                    FontSize="14"
+                                                    HorizontalAlignment="Center"
+                                                    ToolTip="مصروف دوري"
+                                                    Visibility="{Binding IsRecurring,
+                                                        Converter={StaticResource BoolToVisibility}}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <!-- إجمالي -->
+                            <Border Grid.Row="2" Background="#F8F9FA"
+                                    Padding="16,10"
+                                    BorderBrush="{StaticResource ErpBrushBorder}"
+                                    BorderThickness="0,1,0,0">
+                                <TextBlock FontSize="14"
+                                           FontWeight="Bold"
+                                           Foreground="#E74C3C"
+                                           FontFamily="Segoe UI">
+                                    <Run Text="الإجمالي:"/>
+                                    <Run Text="{Binding TotalExpenses,
+                                        StringFormat='{}{0:N0}'}"/>
+                                    <Run Text="ر.ي"/>
+                                </TextBlock>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- نموذج المصروف -->
+                    <Border Grid.Column="1"
+                            Background="{StaticResource ErpBrushCard}" CornerRadius="12"
+                            Padding="20" Margin="0,12,0,0"
+                            Visibility="{Binding IsExpenseFormVisible,
+                                Converter={StaticResource BoolToVisibility}}">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#000" Opacity="0.05"
+                                              BlurRadius="10" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <TextBlock Text="➕ مصروف جديد"
+                                       FontSize="15" FontWeight="Bold"
+                                       Foreground="#E67E22"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,16"/>
+
+                            <!-- الصنف -->
+                            <TextBlock Text="صنف المصروف"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="#555"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,5"/>
+                            <ComboBox
+                                ItemsSource="{Binding Categories}"
+                                DisplayMemberPath="Name"
+                                SelectedValuePath="Value"
+                                SelectedValue="{Binding SelectedCategory}"
+                                Height="38" FontFamily="Segoe UI"
+                                FontSize="13"
+                                Margin="0,0,0,14"/>
+
+                            <!-- المبلغ -->
+                            <TextBlock Text="المبلغ (ر.ي) *"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="#555"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,5"/>
+                            <TextBox
+                                Text="{Binding ExpenseAmount,
+                                    UpdateSourceTrigger=PropertyChanged}"
+                                Height="38" FontSize="13"
+                                FontFamily="Segoe UI"
+                                Padding="10,0"
+                                VerticalContentAlignment="Center"
+                                BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                BorderThickness="1.5"
+                                Margin="0,0,0,14"/>
+
+                            <!-- الوصف -->
+                            <TextBlock Text="الوصف *"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="#555"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,5"/>
+                            <TextBox
+                                Text="{Binding ExpenseDescription,
+                                    UpdateSourceTrigger=PropertyChanged}"
+                                Height="70" TextWrapping="Wrap"
+                                AcceptsReturn="True"
+                                VerticalContentAlignment="Top"
+                                FontSize="13" FontFamily="Segoe UI"
+                                Padding="10"
+                                BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                BorderThickness="1.5"
+                                Margin="0,0,0,14"/>
+
+                            <!-- المرجع -->
+                            <TextBlock Text="رقم المرجع (اختياري)"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="#555"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,5"/>
+                            <TextBox
+                                Text="{Binding ExpenseReference,
+                                    UpdateSourceTrigger=PropertyChanged}"
+                                Height="38" FontSize="13"
+                                FontFamily="Segoe UI"
+                                Padding="10,0"
+                                VerticalContentAlignment="Center"
+                                BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                BorderThickness="1.5"
+                                Margin="0,0,0,14"/>
+
+                            <!-- دوري -->
+                            <CheckBox
+                                Content="مصروف دوري (شهري)"
+                                IsChecked="{Binding IsRecurring}"
+                                FontFamily="Segoe UI"
+                                FontSize="13"
+                                Foreground="#555"
+                                Margin="0,0,0,20"/>
+
+                            <!-- رسائل -->
+                            <Border Background="#FDEDEC" CornerRadius="8"
+                                    Padding="10,6" Margin="0,0,0,10"
+                                    Visibility="{Binding HasError,
+                                        Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="{Binding ErrorMessage}"
+                                           Foreground="#E74C3C" FontSize="12"
+                                           FontFamily="Segoe UI"
+                                           TextWrapping="Wrap"/>
+                            </Border>
+
+                            <Border Background="#EAFAF1" CornerRadius="8"
+                                    Padding="10,6" Margin="0,0,0,10"
+                                    Visibility="{Binding SuccessMessage,
+                                        Converter={StaticResource StringToVisibility}}">
+                                <TextBlock Text="{Binding SuccessMessage}"
+                                           Foreground="#27AE60" FontSize="12"
+                                           FontFamily="Segoe UI"/>
+                            </Border>
+
+                            <!-- أزرار -->
+                            <Button Content="💾 حفظ المصروف"
+                                    Command="{Binding SaveExpenseCommand}"
+                                    Height="42" FontSize="14"
+                                    FontWeight="Bold"
+                                    FontFamily="Segoe UI"
+                                    Background="#E67E22"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Margin="0,0,0,8"/>
+
+                            <Button Content="إلغاء"
+                                    Command="{Binding CancelExpenseCommand}"
+                                    Height="36" FontSize="13"
+                                    FontFamily="Segoe UI"
+                                    Background="{StaticResource ErpBrushPageBg}"
+                                    Foreground="{StaticResource ErpBrushTextSecondary}"
+                                    BorderThickness="1"
+                                    BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                    Cursor="Hand"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ══ المحافظ الإلكترونية ══ -->
+            <TabItem Header="📱 المحافظ">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="{Binding IsTransferFormVisible,
+                            Converter={StaticResource BoolToWidth},
+                            ConverterParameter='300|0'}"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- قائمة المحافظ -->
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+
+                        <!-- بطاقات المحافظ -->
+                        <ItemsControl ItemsSource="{Binding Wallets}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource ErpBrushCard}"
+                                            CornerRadius="12"
+                                            Padding="20,16"
+                                            Margin="0,0,12,12">
+                                        <Border.Effect>
+                                            <DropShadowEffect
+                                                Color="#000" Opacity="0.05"
+                                                BlurRadius="8"
+                                                ShadowDepth="1"/>
+                                        </Border.Effect>
+                                        <StackPanel>
+                                            <TextBlock
+                                                Text="{Binding Name}"
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Foreground="{StaticResource ErpBrushNavSidebar}"
+                                                FontFamily="Segoe UI"/>
+                                            <TextBlock
+                                                Text="{Binding AccountNumber}"
+                                                FontSize="11"
+                                                Foreground="{StaticResource ErpBrushTextSecondary}"
+                                                FontFamily="Segoe UI"
+                                                Margin="0,2,0,8"/>
+                                            <TextBlock
+                                                FontSize="22"
+                                                FontWeight="Bold"
+                                                Foreground="#27AE60"
+                                                FontFamily="Segoe UI">
+                                                <Run Text="{Binding Balance,
+                                                    StringFormat='{}{0:N0}'}"/>
+                                                <Run Text=" ر.ي"
+                                                     FontSize="13"
+                                                     Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- إجمالي المحافظ -->
+                        <Border Background="{StaticResource ErpBrushNavSidebar}" CornerRadius="12"
+                                Padding="20,14" Margin="0,0,12,0">
+                            <Grid>
+                                <TextBlock
+                                    Text="إجمالي رصيد المحافظ"
+                                    FontSize="13" Foreground="#BDC3C7"
+                                    FontFamily="Segoe UI"
+                                    VerticalAlignment="Center"/>
+                                <TextBlock
+                                    HorizontalAlignment="Left"
+                                    FontSize="22" FontWeight="Bold"
+                                    Foreground="White"
+                                    FontFamily="Segoe UI"
+                                    VerticalAlignment="Center">
+                                    <Run Text="{Binding TotalWalletsBalance,
+                                        StringFormat='{}{0:N0}'}"/>
+                                    <Run Text=" ر.ي" FontSize="13"
+                                         Foreground="#BDC3C7"/>
+                                </TextBlock>
+
+                                <Button Content="🔄 تحويل بين المحافظ"
+                                        Command="{Binding ShowTransferFormCommand}"
+                                        HorizontalAlignment="Right"
+                                        Height="36" Padding="14,0"
+                                        Background="#E67E22"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontFamily="Segoe UI"
+                                        FontSize="13"
+                                        Cursor="Hand"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- نموذج التحويل -->
+                    <Border Grid.Column="1"
+                            Background="{StaticResource ErpBrushCard}" CornerRadius="12"
+                            Padding="20"
+                            Visibility="{Binding IsTransferFormVisible,
+                                Converter={StaticResource BoolToVisibility}}">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#000" Opacity="0.05"
+                                              BlurRadius="10" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <TextBlock Text="🔄 تحويل بين المحافظ"
+                                       FontSize="15" FontWeight="Bold"
+                                       Foreground="{StaticResource ErpBrushNavSidebar}"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,16"/>
+
+                            <TextBlock Text="من محفظة"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="#555"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,5"/>
+                            <ComboBox
+                                ItemsSource="{Binding Wallets}"
+                                DisplayMemberPath="Name"
+                                SelectedItem="{Binding TransferFrom}"
+                                Height="38" FontFamily="Segoe UI"
+                                FontSize="13" Margin="0,0,0,14"/>
+
+                            <TextBlock Text="إلى محفظة"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="#555"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,5"/>
+                            <ComboBox
+                                ItemsSource="{Binding Wallets}"
+                                DisplayMemberPath="Name"
+                                SelectedItem="{Binding TransferTo}"
+                                Height="38" FontFamily="Segoe UI"
+                                FontSize="13" Margin="0,0,0,14"/>
+
+                            <TextBlock Text="المبلغ (ر.ي)"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="#555"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,5"/>
+                            <TextBox
+                                Text="{Binding TransferAmount,
+                                    UpdateSourceTrigger=PropertyChanged}"
+                                Height="38" FontSize="13"
+                                FontFamily="Segoe UI"
+                                Padding="10,0"
+                                VerticalContentAlignment="Center"
+                                BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                BorderThickness="1.5"
+                                Margin="0,0,0,14"/>
+
+                            <TextBlock Text="ملاحظات"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="#555"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,5"/>
+                            <TextBox
+                                Text="{Binding TransferNotes,
+                                    UpdateSourceTrigger=PropertyChanged}"
+                                Height="60" TextWrapping="Wrap"
+                                AcceptsReturn="True"
+                                VerticalContentAlignment="Top"
+                                FontSize="13" FontFamily="Segoe UI"
+                                Padding="10"
+                                BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                BorderThickness="1.5"
+                                Margin="0,0,0,20"/>
+
+                            <!-- رسائل -->
+                            <Border Background="#FDEDEC" CornerRadius="8"
+                                    Padding="10,6" Margin="0,0,0,10"
+                                    Visibility="{Binding HasError,
+                                        Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="{Binding ErrorMessage}"
+                                           Foreground="#E74C3C" FontSize="12"
+                                           FontFamily="Segoe UI"
+                                           TextWrapping="Wrap"/>
+                            </Border>
+
+                            <Border Background="#EAFAF1" CornerRadius="8"
+                                    Padding="10,6" Margin="0,0,0,10"
+                                    Visibility="{Binding SuccessMessage,
+                                        Converter={StaticResource StringToVisibility}}">
+                                <TextBlock Text="{Binding SuccessMessage}"
+                                           Foreground="#27AE60" FontSize="12"
+                                           FontFamily="Segoe UI"/>
+                            </Border>
+
+                            <Button Content="💾 تنفيذ التحويل"
+                                    Command="{Binding SaveTransferCommand}"
+                                    Style="{StaticResource ErpPrimaryDarkButton}"
+                                    Margin="0,0,0,8"/>
+
+                            <Button Content="إلغاء"
+                                    Command="{Binding CancelTransferCommand}"
+                                    Style="{StaticResource ErpSecondaryButton}"
+                                    MinHeight="36"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ══ الأرباح والخسائر ══ -->
+            <TabItem Header="📊 الأرباح والخسائر">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Button Grid.Row="0"
+                            Content="📊 إنشاء تقرير الأرباح والخسائر"
+                            Command="{Binding LoadProfitLossCommand}"
+                            Style="{StaticResource ErpPrimaryDarkButton}"
+                            MinHeight="42"
+                            Padding="20,0"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,0,12"/>
+
+                    <!-- تقرير P&L -->
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Visibility="{Binding ProfitLoss,
+                                      Converter={StaticResource NullToVisibility}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- الإيرادات -->
+                            <Border Grid.Column="0"
+                                    Background="{StaticResource ErpBrushCard}"
+                                    CornerRadius="12"
+                                    Padding="20"
+                                    Margin="0,0,10,0">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#000"
+                                        Opacity="0.05" BlurRadius="8"
+                                        ShadowDepth="1"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <TextBlock
+                                        Text="💵 الإيرادات"
+                                        FontSize="15" FontWeight="Bold"
+                                        Foreground="#27AE60"
+                                        FontFamily="Segoe UI"
+                                        Margin="0,0,0,16"/>
+
+                                    <ItemsControl
+                                        ItemsSource="{Binding ProfitLoss.RevenueItems}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,10">
+                                                    <TextBlock
+                                                        Text="{Binding Description}"
+                                                        FontSize="13"
+                                                        Foreground="#555"
+                                                        FontFamily="Segoe UI"
+                                                        VerticalAlignment="Center"/>
+                                                    <TextBlock
+                                                        HorizontalAlignment="Left"
+                                                        FontSize="13"
+                                                        FontWeight="Bold"
+                                                        Foreground="#27AE60"
+                                                        FontFamily="Segoe UI">
+                                                        <Run Text="{Binding Amount,
+                                                            StringFormat='{}{0:N0}'}"/>
+                                                        <Run Text=" ر.ي"
+                                                             Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Separator Background="{StaticResource ErpBrushPageBg}"
+                                               Margin="0,8"/>
+
+                                    <Grid>
+                                        <TextBlock
+                                            Text="إجمالي الإيرادات:"
+                                            FontSize="14" FontWeight="Bold"
+                                            Foreground="{StaticResource ErpBrushNavSidebar}"
+                                            FontFamily="Segoe UI"/>
+                                        <TextBlock
+                                            HorizontalAlignment="Left"
+                                            FontSize="16" FontWeight="Bold"
+                                            Foreground="#27AE60"
+                                            FontFamily="Segoe UI">
+                                            <Run Text="{Binding ProfitLoss.TotalRevenue,
+                                                StringFormat='{}{0:N0}'}"/>
+                                            <Run Text=" ر.ي"/>
+                                        </TextBlock>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- المصروفات -->
+                            <Border Grid.Column="1"
+                                    Background="{StaticResource ErpBrushCard}"
+                                    CornerRadius="12"
+                                    Padding="20">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#000"
+                                        Opacity="0.05" BlurRadius="8"
+                                        ShadowDepth="1"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <TextBlock
+                                        Text="📋 المصروفات"
+                                        FontSize="15" FontWeight="Bold"
+                                        Foreground="#E74C3C"
+                                        FontFamily="Segoe UI"
+                                        Margin="0,0,0,16"/>
+
+                                    <ItemsControl
+                                        ItemsSource="{Binding ProfitLoss.ExpenseItems}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,10">
+                                                    <TextBlock
+                                                        Text="{Binding Category}"
+                                                        FontSize="13"
+                                                        Foreground="#555"
+                                                        FontFamily="Segoe UI"
+                                                        VerticalAlignment="Center"/>
+                                                    <TextBlock
+                                                        HorizontalAlignment="Left"
+                                                        FontSize="13"
+                                                        FontWeight="Bold"
+                                                        Foreground="#E74C3C"
+                                                        FontFamily="Segoe UI">
+                                                        <Run Text="{Binding Amount,
+                                                            StringFormat='{}{0:N0}'}"/>
+                                                        <Run Text=" ر.ي"
+                                                             Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Separator Background="{StaticResource ErpBrushPageBg}"
+                                               Margin="0,8"/>
+
+                                    <Grid Margin="0,0,0,16">
+                                        <TextBlock
+                                            Text="إجمالي المصروفات:"
+                                            FontSize="14" FontWeight="Bold"
+                                            Foreground="{StaticResource ErpBrushNavSidebar}"
+                                            FontFamily="Segoe UI"/>
+                                        <TextBlock
+                                            HorizontalAlignment="Left"
+                                            FontSize="16" FontWeight="Bold"
+                                            Foreground="#E74C3C"
+                                            FontFamily="Segoe UI">
+                                            <Run Text="{Binding ProfitLoss.TotalExpenses,
+                                                StringFormat='{}{0:N0}'}"/>
+                                            <Run Text=" ر.ي"/>
+                                        </TextBlock>
+                                    </Grid>
+
+                                    <!-- صافي الربح/الخسارة -->
+                                    <Border CornerRadius="10"
+                                            Padding="16,12">
+                                        <Border.Background>
+                                            <SolidColorBrush
+                                                Color="{Binding ProfitLoss.IsProfit,
+                                                    Converter={StaticResource BoolToColorConverter},
+                                                    ConverterParameter='#EAFAF1|#FDEDEC'}"/>
+                                        </Border.Background>
+                                        <Grid>
+                                            <TextBlock
+                                                FontSize="15"
+                                                FontWeight="Bold"
+                                                FontFamily="Segoe UI">
+                                                <TextBlock.Foreground>
+                                                    <SolidColorBrush Color="{Binding ProfitLoss.IsProfit,
+                                                        Converter={StaticResource BoolToColorConverter},
+                                                        ConverterParameter='#27AE60|#E74C3C'}"/>
+                                                </TextBlock.Foreground>
+                                                <Run Text="{Binding ProfitLoss.IsProfit,
+                                                    Converter={StaticResource BoolToTextConverter},
+                                                    ConverterParameter='✅ صافي ربح|❌ صافي خسارة'}"/>
+                                            </TextBlock>
+                                            <TextBlock
+                                                HorizontalAlignment="Left"
+                                                FontSize="18"
+                                                FontWeight="Bold"
+                                                FontFamily="Segoe UI">
+                                                <TextBlock.Foreground>
+                                                    <SolidColorBrush Color="{Binding ProfitLoss.IsProfit,
+                                                        Converter={StaticResource BoolToColorConverter},
+                                                        ConverterParameter='#27AE60|#E74C3C'}"/>
+                                                </TextBlock.Foreground>
+                                                <Run Text="{Binding ProfitLoss.NetProfit,
+                                                    StringFormat='{}{0:N0}'}"/>
+                                                <Run Text=" ر.ي"/>
+                                            </TextBlock>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>
