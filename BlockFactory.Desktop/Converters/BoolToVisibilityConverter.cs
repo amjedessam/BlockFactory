@@ -246,6 +246,46 @@ namespace BlockFactory.Desktop.Converters
             object parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
+
+    /// <summary>
+    /// Bool → SolidColorBrush. Parameter format: "#Color1|#Color2"
+    /// True → Color1, False → Color2.
+    /// </summary>
+    public class BoolToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            var parts = parameter?.ToString()?.Split('|');
+            if (parts?.Length == 2)
+            {
+                bool isTrue = value is bool b && b;
+                string hex = isTrue ? parts[0] : parts[1];
+                return new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString(hex));
+            }
+            return new SolidColorBrush(Colors.Transparent);
+        }
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Inverse BoolToVisibility: true → Collapsed, false → Visible.
+    /// </summary>
+    public class InverseBoolToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            bool boolValue = value is bool b && b;
+            return boolValue ? Visibility.Collapsed : Visibility.Visible;
+        }
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
 }
 
 /*

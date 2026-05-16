@@ -120,5 +120,6 @@ C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.AssemblyInfoInputs.cache
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.AssemblyInfo.cs
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.csproj.CoreCompileInputs.cache
-C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.csproj.CopyComplete
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.genruntimeconfig.cache
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\bin\Debug\net6.0-windows\System.Configuration.ConfigurationManager.dll
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.csproj.CopyComplete

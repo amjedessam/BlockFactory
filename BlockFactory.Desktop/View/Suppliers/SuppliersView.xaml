@@ -10,7 +10,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <!-- Summary -->
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="271*"/>
+            <RowDefinition Height="316*"/>
             <!-- Content -->
         </Grid.RowDefinitions>
 
@@ -102,7 +103,7 @@
         </UniformGrid>
 
         <!-- ─── المحتوى الرئيسي ─── -->
-        <Grid Grid.Row="1">
+        <Grid Margin="0,93,0,0" Grid.RowSpan="3">
             <Grid.ColumnDefinitions>
                 <!-- قائمة الموردين -->
                 <ColumnDefinition Width="2*"/>
@@ -138,7 +139,7 @@
                             BorderBrush="{StaticResource ErpBrushBorder}"
                             BorderThickness="0,0,0,1">
                         <Grid>
-                            <TextBlock Text="🚛 الموردون"
+                            <TextBlock Text=""
                                        FontSize="14" FontWeight="Bold"
                                        Foreground="{StaticResource ErpBrushTextPrimary}"
                                        FontFamily="Segoe UI"
@@ -328,7 +329,7 @@
                                        FontFamily="Segoe UI"
                                        VerticalAlignment="Center"
                                        TextWrapping="Wrap">
-                                <Run Text="🧾 فواتير "/>
+                                <Run Text=" الفواتير "/>
                                 <Run Text="{Binding SelectedSupplier.FullName,
                                     FallbackValue=''}"/>
                             </TextBlock>
@@ -599,7 +600,7 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
 
-                                <Button Content="➕ سطر"
+                                <Button Content="➕ صنف جديد"
                                         Command="{Binding AddPurchaseLineCommand}"
                                         Height="32" HorizontalAlignment="Right"
                                         Margin="0,0,0,10"

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "CpCn77C3j6Gf9Z8Eilo78fBq+padalkJS2FMiJmgP3Z5hO+0FAyl4wcomDnv+NDtMr/DofeclB0koL23PHSm2Q==",
+  "dgSpecHash": "0V9tbTum7RXS9jSkrRp52PFp9SGLg/29HA6lEP3E5ZU31WGJXSbX/lI2jgDHtr4PnNlmozjqoeS9gWnkjEzBrQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\XPRISTO\\source\\repos\\BlockFactory\\BlockFactory.Desktop\\BlockFactory.Desktop.csproj",
   "expectedPackageFiles": [
@@ -32,23 +32,23 @@
     "C:\\Users\\XPRISTO\\.nuget\\packages\\microsoft.identitymodel.protocols\\6.36.0\\microsoft.identitymodel.protocols.6.36.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\6.36.0\\microsoft.identitymodel.protocols.openidconnect.6.36.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\microsoft.identitymodel.tokens\\6.36.0\\microsoft.identitymodel.tokens.6.36.0.nupkg.sha512",
-    "C:\\Users\\XPRISTO\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.9\\microsoft.netcore.platforms.3.1.9.nupkg.sha512",
+    "C:\\Users\\XPRISTO\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
-    "C:\\Users\\XPRISTO\\.nuget\\packages\\microsoft.win32.systemevents\\4.7.0\\microsoft.win32.systemevents.4.7.0.nupkg.sha512",
+    "C:\\Users\\XPRISTO\\.nuget\\packages\\microsoft.win32.systemevents\\6.0.0\\microsoft.win32.systemevents.6.0.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\questpdf\\2024.3.0\\questpdf.2024.3.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\system.collections.immutable\\6.0.1\\system.collections.immutable.6.0.1.nupkg.sha512",
-    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.configuration.configurationmanager\\4.7.0\\system.configuration.configurationmanager.4.7.0.nupkg.sha512",
+    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.configuration.configurationmanager\\6.0.1\\system.configuration.configurationmanager.6.0.1.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\system.diagnostics.diagnosticsource\\6.0.2\\system.diagnostics.diagnosticsource.6.0.2.nupkg.sha512",
-    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.drawing.common\\4.7.3\\system.drawing.common.4.7.3.nupkg.sha512",
+    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.drawing.common\\6.0.0\\system.drawing.common.6.0.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\system.identitymodel.tokens.jwt\\6.36.0\\system.identitymodel.tokens.jwt.6.36.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\system.runtime.caching\\4.7.0\\system.runtime.caching.4.7.0.nupkg.sha512",
-    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.security.accesscontrol\\4.7.0\\system.security.accesscontrol.4.7.0.nupkg.sha512",
+    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.security.accesscontrol\\6.0.0\\system.security.accesscontrol.6.0.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\system.security.cryptography.cng\\4.5.0\\system.security.cryptography.cng.4.5.0.nupkg.sha512",
-    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.security.cryptography.protecteddata\\4.7.0\\system.security.cryptography.protecteddata.4.7.0.nupkg.sha512",
-    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.security.permissions\\4.7.0\\system.security.permissions.4.7.0.nupkg.sha512",
+    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.security.cryptography.protecteddata\\6.0.0\\system.security.cryptography.protecteddata.6.0.0.nupkg.sha512",
+    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.security.permissions\\6.0.0\\system.security.permissions.6.0.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\system.security.principal.windows\\4.7.0\\system.security.principal.windows.4.7.0.nupkg.sha512",
     "C:\\Users\\XPRISTO\\.nuget\\packages\\system.text.encoding.codepages\\4.7.0\\system.text.encoding.codepages.4.7.0.nupkg.sha512",
-    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512"
+    "C:\\Users\\XPRISTO\\.nuget\\packages\\system.windows.extensions\\6.0.0\\system.windows.extensions.6.0.0.nupkg.sha512"
   ],
   "logs": []
 }

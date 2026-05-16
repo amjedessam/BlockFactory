@@ -9,7 +9,7 @@ C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\Bl
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.AssemblyInfoInputs.cache
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.AssemblyInfo.cs
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.csproj.CoreCompileInputs.cache
-C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.csproj.CopyComplete
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.dll
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.pdb
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.genruntimeconfig.cache
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.data\obj\Debug\net6.0\BlockFactory.data.csproj.CopyComplete

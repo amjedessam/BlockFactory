@@ -22,6 +22,8 @@
             <converters:ProfitColorConverter           x:Key="ProfitColorConverter"/>
             <converters:ProfitTextColorConverter     x:Key="ProfitTextColorConverter"/>
             <converters:ProfitLabelConverter         x:Key="ProfitLabelConverter"/>
+            <converters:BoolToBrushConverter         x:Key="BoolToBrush"/>
+            <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
         </ResourceDictionary>
     </Application.Resources>
 

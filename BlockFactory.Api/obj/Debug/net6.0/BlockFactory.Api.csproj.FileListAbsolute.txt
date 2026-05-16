@@ -91,7 +91,7 @@ C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\Blo
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\staticwebassets.build.json
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\staticwebassets.development.json
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\scopedcss\bundle\BlockFactory.Api.styles.css
-C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.csproj.CopyComplete
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.dll
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.pdb
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.genruntimeconfig.cache
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.csproj.CopyComplete

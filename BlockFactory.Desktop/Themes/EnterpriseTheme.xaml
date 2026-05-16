@@ -24,9 +24,17 @@
     <SolidColorBrush x:Key="ErpBrushFieldLabel" Color="#555555"/>
 
     <!-- Legacy aliases (shell / views already use these names in places) -->
-    <SolidColorBrush x:Key="SidebarBg" Color="#1E3A5F"/>
-    <SolidColorBrush x:Key="SidebarHover" Color="#2C4F7C"/>
-    <SolidColorBrush x:Key="SidebarActive" Color="#E67E22"/>
+    <SolidColorBrush x:Key="SidebarBg" Color="#0F1E30"/>
+    <SolidColorBrush x:Key="SidebarHover" Color="#1A3050"/>
+    <SolidColorBrush x:Key="SidebarActive" Color="#F5A623"/>
+    <SolidColorBrush x:Key="SidebarActiveSubtle" Color="#1E3F6E"/>
+    <SolidColorBrush x:Key="SidebarActiveBg" Color="#1E3F6E"/>
+    <SolidColorBrush x:Key="SidebarFavoriteStar" Color="#F5A623"/>
+    <SolidColorBrush x:Key="SidebarFavoriteStarOff" Color="#4A6580"/>
+    <SolidColorBrush x:Key="SidebarGroupHeader" Color="#8AB4D4"/>
+    <SolidColorBrush x:Key="SidebarIconNormal" Color="#7EB8D4"/>
+    <SolidColorBrush x:Key="SidebarTextNormal" Color="#C8D8E8"/>
+    <SolidColorBrush x:Key="SidebarSeparator" Color="#1E3A55"/>
     <SolidColorBrush x:Key="HeaderBg" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="ContentBg" Color="#F0F2F5"/>
     <SolidColorBrush x:Key="TextLight" Color="#ECF0F1"/>

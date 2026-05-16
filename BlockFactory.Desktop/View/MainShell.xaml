@@ -13,46 +13,33 @@
         Background="{StaticResource ErpBrushPageBg}">
 
     <Window.Resources>
-
-        <!-- ══════════════════════════════════════════════ -->
-        <!-- ألوان الـ Sidebar                             -->
-        <!-- ══════════════════════════════════════════════ -->
-        <SolidColorBrush x:Key="SidebarBg"       Color="#1E3A5F"/>
-        <SolidColorBrush x:Key="SidebarHover"    Color="#2C4F7C"/>
-        <SolidColorBrush x:Key="SidebarActive"   Color="#E67E22"/>
-        <SolidColorBrush x:Key="SidebarActiveBg" Color="#2A4A72"/>
-        <SolidColorBrush x:Key="TextLight"       Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="TextMuted"       Color="#8BA5C4"/>
-        <SolidColorBrush x:Key="HeaderBg"        Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="ContentBg"       Color="#F5F7FA"/>
-
-        <!-- ══════════════════════════════════════════════ -->
-        <!-- زر التنقل العادي                              -->
-        <!-- ══════════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- NavButton: Professional navigation button   -->
+        <!-- ═══════════════════════════════════════════ -->
         <Style x:Key="NavButton" TargetType="Button">
-            <Setter Property="Background"              Value="Transparent"/>
-            <Setter Property="BorderThickness"         Value="0"/>
-            <Setter Property="Cursor"                  Value="Hand"/>
-            <Setter Property="Height"                  Value="42"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="42"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="FocusVisualStyle"        Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <!-- المؤشر الجانبي (يظهر عند التفعيل) -->
-                            <Rectangle x:Name="ActiveIndicator"
-                                       Width="4"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Stretch"
-                                       RadiusX="2" RadiusY="2"
-                                       Fill="{StaticResource SidebarActive}"
-                                       Opacity="0"/>
-                            <!-- خلفية الزر -->
+                            <!-- Active indicator vertical bar (left side in LTR = right visual in RTL) -->
+                            <Border x:Name="activeBar"
+                                    HorizontalAlignment="Right"
+                                    Width="4"
+                                    CornerRadius="2,0,0,2"
+                                    Background="{StaticResource SidebarActive}"
+                                    Opacity="0"/>
+
+                            <!-- Main content area -->
                             <Border x:Name="border"
                                     Background="{TemplateBinding Background}"
                                     CornerRadius="8"
-                                    Margin="8,2,8,2">
+                                    Margin="8,2,8,2"
+                                    Padding="0">
                                 <ContentPresenter VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
@@ -68,57 +55,23 @@
             </Setter>
         </Style>
 
-        <!-- ══════════════════════════════════════════════ -->
-        <!-- زر التنقل المحدد (Active)                     -->
-        <!-- ══════════════════════════════════════════════ -->
-        <Style x:Key="NavButtonActive" TargetType="Button"
-               BasedOn="{StaticResource NavButton}">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Grid>
-                            <!-- المؤشر البرتقالي على اليمين -->
-                            <Rectangle Width="4"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Stretch"
-                                       RadiusX="2" RadiusY="2"
-                                       Fill="{StaticResource SidebarActive}"
-                                       Margin="0,4,0,4"/>
-                            <!-- خلفية مميزة -->
-                            <Border Background="{StaticResource SidebarActiveBg}"
-                                    CornerRadius="8"
-                                    Margin="8,2,8,2">
-                                <ContentPresenter VerticalAlignment="Center"/>
-                            </Border>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- ══════════════════════════════════════════════ -->
-        <!-- زر عنوان المجموعة (Collapsible Group Header)  -->
-        <!-- ══════════════════════════════════════════════ -->
+        <!-- Group Header Button style -->
         <Style x:Key="GroupHeaderButton" TargetType="Button">
-            <Setter Property="Background"              Value="Transparent"/>
-            <Setter Property="BorderThickness"         Value="0"/>
-            <Setter Property="Cursor"                  Value="Hand"/>
-            <Setter Property="Height"                  Value="32"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="FocusVisualStyle"        Value="{x:Null}"/>
+            <Setter Property="Height" Value="36"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                Background="Transparent"
-                                Padding="20,0,12,0">
+                        <Border Background="{TemplateBinding Background}"
+                                Margin="8,0" Padding="10,0" CornerRadius="4">
                             <ContentPresenter VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border"
-                                        Property="Background"
-                                        Value="#1A2E45"/>
+                                <Setter Property="Background" Value="#15FFFFFF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -126,222 +79,368 @@
             </Setter>
         </Style>
 
+        <!-- Star (Favorite) Toggle Button -->
+        <Style x:Key="FavStarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Opacity" Value="0.3"/> <!-- Starts slightly visible for better affordance -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="14">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#22FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="1"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
+            <!-- Sidebar -->
             <ColumnDefinition Width="{Binding SidebarWidth}"/>
+            <!-- Main Content -->
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- ══════════════════════════════════════════════ -->
-        <!-- SIDEBAR                                        -->
-        <!-- ══════════════════════════════════════════════ -->
+        <!-- ══════════════════════════════════════ -->
+        <!-- SIDEBAR                               -->
+        <!-- ══════════════════════════════════════ -->
         <Grid Grid.Column="0"
               Background="{StaticResource SidebarBg}">
             <Grid.RowDefinitions>
+                <!-- Logo & Toggle -->
                 <RowDefinition Height="Auto"/>
+                <!-- Menu -->
                 <RowDefinition Height="*"/>
+                <!-- User Profile -->
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- ─── Logo + Toggle ──────────────────────── -->
+            <!-- ─── Header Area & Toggle ─── -->
             <Border Grid.Row="0"
-                    Padding="16,18"
-                    BorderBrush="#2C4F7C"
+                    Padding="12,18"
+                    BorderBrush="{StaticResource SidebarSeparator}"
                     BorderThickness="0,0,0,1">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#1A3050" Offset="0.0" />
+                        <GradientStop Color="#0F1E30" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- أيقونة المصنع -->
-                    <Border Grid.Column="0"
-                            Width="38" Height="38"
-                            Background="{StaticResource SidebarActive}"
-                            CornerRadius="10">
-                        <TextBlock Text="🏭"
-                                   FontSize="20"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Border>
+                    <!-- زر طي السايدبار (Toggle Button) -->
+                    <Button Grid.Column="0"
+                            Command="{Binding ToggleSidebarCommand}"
+                            Width="36" Height="36"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            ToolTip="طي / فتح القائمة">
+                        <Border Background="#1E3F6E" CornerRadius="8">
+                            <TextBlock Foreground="{StaticResource SidebarIconNormal}"
+                                       FontSize="18"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="☰"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSidebarExpanded}" Value="True">
+                                                <Setter Property="Text" Value="✕"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+                    </Button>
 
                     <!-- اسم النظام -->
                     <StackPanel Grid.Column="1"
-                                Margin="10,0,0,0"
+                                Margin="12,0,0,0"
                                 VerticalAlignment="Center"
-                                Visibility="{Binding IsSidebarExpanded,
-                                    Converter={StaticResource BoolToVisibility}}">
+                                Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVisibility}}">
                         <TextBlock Text="مصنع البلوك"
-                                   FontSize="14"
+                                   FontSize="15"
                                    FontWeight="Bold"
-                                   Foreground="{StaticResource TextLight}"
+                                   Foreground="{StaticResource SidebarTextNormal}"
                                    FontFamily="Segoe UI"/>
                         <TextBlock Text="نظام الإدارة"
-                                   FontSize="10"
-                                   Foreground="{StaticResource TextMuted}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource SidebarGroupHeader}"
                                    FontFamily="Segoe UI"/>
                     </StackPanel>
-
-                    <!-- زر الطي -->
-                    <Button Grid.Column="2"
-                            Command="{Binding ToggleSidebarCommand}"
-                            Width="30" Height="30"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            ToolTip="طي القائمة / توسيعها">
-                        <TextBlock Text="☰"
-                                   Foreground="{StaticResource TextMuted}"
-                                   FontSize="16"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Button>
                 </Grid>
             </Border>
 
-            <!-- ─── Navigation Menu ─────────────────────── -->
+            <!-- ─── Navigation Menu ─── -->
             <ScrollViewer Grid.Row="1"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
-                          Margin="0,6,0,0">
-                <ItemsControl ItemsSource="{Binding MenuGroups}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="0,2,0,0">
+                          Margin="0,8,0,0">
+                <StackPanel>
 
-                                <!-- عنوان المجموعة — قابل للضغط للطي -->
-                                <Button Style="{StaticResource GroupHeaderButton}"
-                                        Command="{Binding ToggleCommand}"
-                                        Visibility="{Binding DataContext.IsSidebarExpanded,
-                                            RelativeSource={RelativeSource AncestorType=Window},
-                                            Converter={StaticResource BoolToVisibility}}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
+                    <!-- ═══ FAVORITES SECTION ═══ -->
+                    <StackPanel Visibility="{Binding HasFavorites, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="المفضلة"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource SidebarGroupHeader}"
+                                   FontFamily="Segoe UI"
+                                   Margin="20,8,0,8"
+                                   Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVisibility}}"/>
 
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding GroupTitle}"
-                                                   FontSize="10"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource TextMuted}"
-                                                   FontFamily="Segoe UI"
-                                                   VerticalAlignment="Center"
-                                                   CharacterSpacing="80"/>
+                        <ItemsControl ItemsSource="{Binding FavoriteItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button ToolTip="{Binding Title}"
+                                            Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding ViewName}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource SidebarActiveSubtle}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        <Grid Margin="12,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
 
-                                        <!-- سهم الطي -->
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding IsExpanded,
-                                                       Converter={StaticResource BoolToTextConverter},
-                                                       ConverterParameter='▲|▼'}"
-                                                   FontSize="8"
-                                                   Foreground="{StaticResource TextMuted}"
-                                                   VerticalAlignment="Center"/>
-                                    </Grid>
-                                </Button>
+                                            <!-- Vertical Bar Indicator -->
+                                            <Border Grid.Column="0"
+                                                    x:Name="FavActiveBar"
+                                                    HorizontalAlignment="Right"
+                                                    Width="3"
+                                                    Height="26"
+                                                    CornerRadius="0"
+                                                    Margin="0,0,-10,0"
+                                                    Background="{StaticResource SidebarActive}"
+                                                    Opacity="0"/>
 
-                                <!-- عناصر القائمة (تختفي عند الطي) -->
-                                <ItemsControl ItemsSource="{Binding Items}">
-                                    <ItemsControl.Style>
-                                        <Style TargetType="ItemsControl">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsExpanded}" Value="False">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ItemsControl.Style>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Button Style="{StaticResource NavButton}"
-                                                    Command="{Binding DataContext.NavigateCommand,
-                                                        RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding ViewName}"
-                                                    ToolTip="{Binding Title}">
+                                            <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="18" VerticalAlignment="Center" Width="28" TextAlignment="Center" Foreground="{StaticResource SidebarIconNormal}" x:Name="FavIcon"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="13" FontWeight="Medium" FontFamily="Segoe UI" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{StaticResource SidebarTextNormal}" Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisibility}}" x:Name="FavText"/>
+                                        </Grid>
+                                        <Button.Triggers>
+                                            <EventTrigger RoutedEvent="Loaded">
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="FavActiveBar" Storyboard.TargetProperty="Opacity" Duration="0" To="0"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter TargetName="FavActiveBar" Property="Opacity" Value="1"/>
+                                            <Setter TargetName="FavIcon" Property="Foreground" Value="{StaticResource SidebarActive}"/>
+                                            <Setter TargetName="FavText" Property="Foreground" Value="{StaticResource SidebarActive}"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
-                                                <!-- Active Style Override -->
-                                                <Button.Resources>
-                                                    <Style TargetType="Button"
-                                                           BasedOn="{StaticResource NavButton}">
+                        <Separator Background="{StaticResource SidebarSeparator}" Margin="16,8" Height="1" BorderThickness="0"/>
+                    </StackPanel>
+
+                    <!-- ═══ MENU GROUPS ═══ -->
+                    <ItemsControl ItemsSource="{Binding MenuGroups}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,4,0,0">
+
+                                    <!-- ─── Group Header (Accordion Toggle) ─── -->
+                                    <Button Style="{StaticResource GroupHeaderButton}"
+                                            Command="{Binding DataContext.ToggleGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="{Binding GroupTitle}"
+                                            Visibility="{Binding DataContext.IsSidebarExpanded, Converter={StaticResource BoolToVisibility}, RelativeSource={RelativeSource AncestorType=Window}}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Group Header: #8ab4d4 (SidebarGroupHeader) with 600 weight (SemiBold) -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding GroupTitle}"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource SidebarGroupHeader}"
+                                                       FontFamily="Segoe UI"
+                                                       VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="1" FontSize="12" Foreground="{StaticResource SidebarGroupHeader}" VerticalAlignment="Center" Margin="4,0,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="▾"/>
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                                <Setter Property="Template">
-                                                                    <Setter.Value>
-                                                                        <ControlTemplate TargetType="Button">
-                                                                            <Grid>
-                                                                                <Rectangle Width="4"
-                                                                                           HorizontalAlignment="Right"
-                                                                                           VerticalAlignment="Stretch"
-                                                                                           RadiusX="2" RadiusY="2"
-                                                                                           Fill="{StaticResource SidebarActive}"
-                                                                                           Margin="0,4,0,4"/>
-                                                                                <Border Background="{StaticResource SidebarActiveBg}"
-                                                                                        CornerRadius="8"
-                                                                                        Margin="8,2,8,2">
-                                                                                    <ContentPresenter VerticalAlignment="Center"/>
-                                                                                </Border>
-                                                                            </Grid>
-                                                                        </ControlTemplate>
-                                                                    </Setter.Value>
-                                                                </Setter>
+                                                            <DataTrigger Binding="{Binding IsExpanded}" Value="False">
+                                                                <Setter Property="Text" Value="◂"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
-                                                </Button.Resources>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
+                                    </Button>
 
-                                                <Grid Margin="12,0">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="24"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
+                                    <!-- ─── Group Items (Collapsible) ─── -->
+                                    <ItemsControl ItemsSource="{Binding Items}">
+                                        <ItemsControl.Style>
+                                            <Style TargetType="ItemsControl">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsExpanded}" Value="False">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ItemsControl.Style>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid x:Name="navItemRow">
+                                                    <Button ToolTip="{Binding Title}"
+                                                            Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding ViewName}">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                        <Setter Property="Background" Value="{StaticResource SidebarActiveSubtle}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <Grid Margin="12,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
 
-                                                    <!-- الأيقونة -->
-                                                    <TextBlock Grid.Column="0"
-                                                               Text="{Binding Icon}"
-                                                               FontSize="15"
-                                                               VerticalAlignment="Center"
-                                                               TextAlignment="Center"/>
+                                                            <!-- Vertical bar active indicator (Right visually in RTL) -->
+                                                            <Border Grid.Column="0"
+                                                                    x:Name="ItemActiveBar"
+                                                                    HorizontalAlignment="Right"
+                                                                    Width="3"
+                                                                    Height="26"
+                                                                    CornerRadius="0"
+                                                                    Margin="0,0,-10,0"
+                                                                    Background="{StaticResource SidebarActive}"
+                                                                    Opacity="0"/>
 
-                                                    <!-- العنوان (يختفي في وضع المصغر) -->
-                                                    <StackPanel Grid.Column="1"
-                                                                Orientation="Horizontal"
-                                                                VerticalAlignment="Center"
-                                                                Margin="10,0,0,0"
-                                                                Visibility="{Binding DataContext.IsSidebarExpanded,
-                                                                    RelativeSource={RelativeSource AncestorType=Window},
-                                                                    Converter={StaticResource BoolToVisibility}}">
-                                                        <TextBlock Text="{Binding Title}"
-                                                                   FontSize="13"
-                                                                   Foreground="{StaticResource TextLight}"
-                                                                   FontFamily="Segoe UI"
-                                                                   VerticalAlignment="Center"/>
-                                                    </StackPanel>
+                                                            <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="18" VerticalAlignment="Center" Width="28" TextAlignment="Center" Foreground="{StaticResource SidebarIconNormal}" x:Name="ItemIcon"/>
+
+                                                            <!-- Menu Item Text (13px, weight 500=Medium) -->
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="{Binding Title}"
+                                                                       FontSize="13"
+                                                                       FontWeight="Medium"
+                                                                       FontFamily="Segoe UI"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="10,0,0,0"
+                                                                       Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisibility}}"
+                                                                       x:Name="ItemText"
+                                                                       Foreground="{StaticResource SidebarTextNormal}"/>
+
+                                                            <!-- Star favorite button -->
+                                                            <Button x:Name="StarBtn" 
+                                                                    Grid.Column="2"
+                                                                    Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Style="{StaticResource FavStarButton}"
+                                                                    Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisibility}}">
+                                                                <TextBlock FontSize="16" VerticalAlignment="Center" Padding="0,0,0,3">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Text" Value="☆"/>
+                                                                            <Setter Property="Foreground" Value="{StaticResource SidebarFavoriteStarOff}"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                                                    <Setter Property="Text" Value="★"/>
+                                                                                    <Setter Property="Foreground" Value="{StaticResource SidebarFavoriteStar}"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                            </Button>
+                                                        </Grid>
+                                                    </Button>
                                                 </Grid>
-                                            </Button>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
 
-                                <!-- فاصل بين المجموعات -->
-                                <Rectangle Height="1"
-                                           Fill="#2C4F7C"
-                                           Margin="16,6,16,2"
-                                           Opacity="0.4"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                                                <!-- DataTemplate triggers to handle active states -->
+                                                <DataTemplate.Triggers>
+                                                    <EventTrigger RoutedEvent="Mouse.MouseEnter">
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="StarBtn" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                    <EventTrigger RoutedEvent="Mouse.MouseLeave">
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="StarBtn" Storyboard.TargetProperty="Opacity" To="0.3" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                    <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                        <Setter TargetName="StarBtn" Property="Opacity" Value="1"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter TargetName="ItemActiveBar" Property="Opacity" Value="1"/>
+                                                        <Setter TargetName="ItemIcon" Property="Foreground" Value="{StaticResource SidebarActive}"/>
+                                                        <Setter TargetName="ItemText" Property="Foreground" Value="{StaticResource SidebarActive}"/>
+                                                    </DataTrigger>
+                                                </DataTemplate.Triggers>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Separator between groups -->
+                                    <Separator Background="{StaticResource SidebarSeparator}" Margin="16,6" Height="1" BorderThickness="0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
             </ScrollViewer>
 
-            <!-- ─── User Profile ────────────────────────── -->
+            <!-- ─── User Profile ─── -->
             <Border Grid.Row="2"
-                    BorderBrush="#2C4F7C"
+                    Background="{StaticResource SidebarBg}"
+                    BorderBrush="#21416A"
                     BorderThickness="0,1,0,0"
-                    Padding="12,10">
+                    Padding="12,16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -349,109 +448,63 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Avatar -->
                     <Border Grid.Column="0"
                             Width="36" Height="36"
-                            Background="{StaticResource SidebarActive}"
-                            CornerRadius="18">
+                            Background="{StaticResource SidebarActiveBg}"
+                            CornerRadius="18"
+                            ToolTip="{Binding UserFullName}">
                         <TextBlock Text="{Binding UserInitials}"
-                                   Foreground="White"
-                                   FontSize="13"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
+                                   Foreground="White" FontSize="13" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                    FontFamily="Segoe UI"/>
                     </Border>
 
-                    <!-- الاسم والدور -->
-                    <StackPanel Grid.Column="1"
-                                Margin="10,0,0,0"
-                                VerticalAlignment="Center"
-                                Visibility="{Binding IsSidebarExpanded,
-                                    Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock Text="{Binding UserFullName}"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextLight}"
-                                   FontFamily="Segoe UI"/>
-                        <TextBlock Text="{Binding UserRole}"
-                                   FontSize="10"
-                                   Foreground="{StaticResource TextMuted}"
-                                   FontFamily="Segoe UI"/>
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding UserFullName}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource SidebarTextNormal}" FontFamily="Segoe UI"/>
+                        <TextBlock Text="{Binding UserRole}" FontSize="11" Foreground="{StaticResource SidebarGroupHeader}" FontFamily="Segoe UI"/>
                     </StackPanel>
 
-                    <!-- زر الخروج -->
                     <Button Grid.Column="2"
                             Command="{Binding LogoutCommand}"
-                            Width="32" Height="32"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Cursor="Hand"
+                            Width="32" Height="32" Background="Transparent" BorderThickness="0" Cursor="Hand"
                             ToolTip="تسجيل الخروج"
-                            Visibility="{Binding IsSidebarExpanded,
-                                Converter={StaticResource BoolToVisibility}}">
-                        <Border Background="#C0392B"
-                                CornerRadius="6"
-                                Width="28" Height="28">
-                            <TextBlock Text="🚪"
-                                       FontSize="14"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
+                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVisibility}}">
+                        <Border Background="#22FFFFFF" CornerRadius="6" Padding="4">
+                            <TextBlock Text="🚪" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </Button>
                 </Grid>
             </Border>
         </Grid>
 
-        <!-- ══════════════════════════════════════════════ -->
-        <!-- MAIN CONTENT                                   -->
-        <!-- ══════════════════════════════════════════════ -->
+        <!-- ══════════════════════════════════════ -->
+        <!-- MAIN CONTENT AREA                     -->
+        <!-- ══════════════════════════════════════ -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="60"/>
+                <RowDefinition Height="64"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- ─── Header ──────────────────────────────── -->
-            <Border Grid.Row="0"
-                    Background="{StaticResource HeaderBg}"
-                    BorderBrush="#E5E9EF"
-                    BorderThickness="0,0,0,1">
+            <Border Grid.Row="0" Background="{StaticResource HeaderBg}" BorderBrush="#E5E9EF" BorderThickness="0,0,0,1">
                 <Grid Margin="24,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0"
-                                VerticalAlignment="Center"
-                                Orientation="Horizontal">
-                        <TextBlock Text="🏠"
-                                   FontSize="16"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0"/>
-                        <TextBlock Text="{Binding CurrentViewTitle}"
-                                   FontSize="18"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource ErpBrushTextPrimary}"
-                                   FontFamily="Segoe UI"
-                                   VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="🏠" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding CurrentViewTitle}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource ErpBrushTextPrimary}" FontFamily="Segoe UI" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding CurrentTime}"
-                               FontSize="14"
-                               Foreground="{StaticResource ErpBrushTextSecondary}"
-                               FontFamily="Segoe UI"
-                               VerticalAlignment="Center"
-                               Margin="0,0,16,0"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <TextBlock Text="{Binding CurrentTime}" FontSize="15" Foreground="{StaticResource ErpBrushTextSecondary}" FontFamily="Segoe UI" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- ─── Content ─────────────────────────────── -->
-            <Border Grid.Row="1"
-                    Background="{StaticResource ContentBg}"
-                    Padding="{StaticResource ErpPaddingPage}">
+            <Border Grid.Row="1" Background="{StaticResource ContentBg}" Padding="{StaticResource ErpPaddingPage}">
                 <ContentControl x:Name="MainFrame"/>
             </Border>
         </Grid>

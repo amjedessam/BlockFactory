@@ -30,6 +30,7 @@ namespace BlockFactory.Desktop.ViewModels
 
             InitializeMenuGroups();
             InitializeCommands();
+            LoadFavorites();
 
             // الانتقال للداشبورد عند الفتح
             NavigateCommand.Execute("Dashboard");
@@ -62,7 +63,7 @@ namespace BlockFactory.Desktop.ViewModels
             }
         }
 
-        public double SidebarWidth => IsSidebarExpanded ? 240 : 60;
+        public double SidebarWidth => IsSidebarExpanded ? 250 : 64;
 
         // بيانات المستخدم الحالي
         public string UserFullName
@@ -83,9 +84,22 @@ namespace BlockFactory.Desktop.ViewModels
         public ObservableCollection<NavigationMenuGroup> MenuGroups { get; }
             = new();
 
+        // المفضلة
+        public ObservableCollection<NavigationMenuItem> FavoriteItems { get; }
+            = new();
+
+        private bool _hasFavorites;
+        public bool HasFavorites
+        {
+            get => _hasFavorites;
+            set => SetProperty(ref _hasFavorites, value);
+        }
+
         // ─── Commands ───────────────────────────────
         public RelayCommand NavigateCommand { get; private set; } = null!;
         public RelayCommand ToggleSidebarCommand { get; private set; } = null!;
+        public RelayCommand ToggleFavoriteCommand { get; private set; } = null!;
+        public RelayCommand ToggleGroupCommand { get; private set; } = null!;
         public AsyncRelayCommand LogoutCommand { get; private set; } = null!;
 
         // ─── Init ───────────────────────────────────
@@ -100,6 +114,22 @@ namespace BlockFactory.Desktop.ViewModels
 
             ToggleSidebarCommand = new RelayCommand(_ =>
                 IsSidebarExpanded = !IsSidebarExpanded);
+
+            ToggleFavoriteCommand = new RelayCommand(param =>
+            {
+                if (param is NavigationMenuItem item)
+                {
+                    item.IsFavorite = !item.IsFavorite;
+                    RebuildFavorites();
+                    SaveFavorites();
+                }
+            });
+
+            ToggleGroupCommand = new RelayCommand(param =>
+            {
+                if (param is NavigationMenuGroup group)
+                    group.IsExpanded = !group.IsExpanded;
+            });
 
             LogoutCommand = new AsyncRelayCommand(async _ =>
             {
@@ -141,6 +171,7 @@ namespace BlockFactory.Desktop.ViewModels
             var mainGroup = new NavigationMenuGroup
             {
                 GroupTitle = "الرئيسية",
+                GroupIcon = "🏠",
                 Items = new List<NavigationMenuItem>
                 {
                     new NavigationMenuItem
@@ -156,6 +187,7 @@ namespace BlockFactory.Desktop.ViewModels
             var salesGroup = new NavigationMenuGroup
             {
                 GroupTitle = "المبيعات",
+                GroupIcon = "💼",
                 Items = new List<NavigationMenuItem>
                 {
                     new NavigationMenuItem
@@ -177,6 +209,7 @@ namespace BlockFactory.Desktop.ViewModels
             var operationsGroup = new NavigationMenuGroup
             {
                 GroupTitle = "التشغيل",
+                GroupIcon = "⚙",
                 Items = new List<NavigationMenuItem>
                 {
                     new NavigationMenuItem
@@ -204,6 +237,7 @@ namespace BlockFactory.Desktop.ViewModels
             var hrGroup = new NavigationMenuGroup
             {
                 GroupTitle = "الموارد البشرية",
+                GroupIcon = "👷",
                 Items = new List<NavigationMenuItem>
                 {
                     new NavigationMenuItem
@@ -225,6 +259,7 @@ namespace BlockFactory.Desktop.ViewModels
             var financeGroup = new NavigationMenuGroup
             {
                 GroupTitle = "المالية",
+                GroupIcon = "📒",
                 Items = new List<NavigationMenuItem>
                 {
                     new NavigationMenuItem
@@ -246,6 +281,7 @@ namespace BlockFactory.Desktop.ViewModels
             var settingsGroup = new NavigationMenuGroup
             {
                 GroupTitle = "الإعدادات",
+                GroupIcon = "⚙",
                 Items = new List<NavigationMenuItem>()
             };
 
@@ -275,6 +311,61 @@ namespace BlockFactory.Desktop.ViewModels
                 MenuGroups.Add(settingsGroup);
         }
 
+        // ─── Favorites ──────────────────────────────
+
+        private void RebuildFavorites()
+        {
+            FavoriteItems.Clear();
+            foreach (var group in MenuGroups)
+                foreach (var item in group.Items)
+                    if (item.IsFavorite)
+                        FavoriteItems.Add(item);
+
+            HasFavorites = FavoriteItems.Count > 0;
+        }
+
+        private void SaveFavorites()
+        {
+            try
+            {
+                var favViewNames = MenuGroups
+                    .SelectMany(g => g.Items)
+                    .Where(i => i.IsFavorite)
+                    .Select(i => i.ViewName);
+                var csv = string.Join(",", favViewNames);
+
+                Properties.Settings.Default.FavoriteMenuItems = csv;
+                Properties.Settings.Default.Save();
+            }
+            catch
+            {
+                // إذا لم يوجد ملف Settings — لا بأس
+            }
+        }
+
+        private void LoadFavorites()
+        {
+            try
+            {
+                var csv = Properties.Settings.Default.FavoriteMenuItems;
+                if (string.IsNullOrEmpty(csv)) return;
+
+                var favSet = new HashSet<string>(
+                    csv.Split(',', StringSplitOptions.RemoveEmptyEntries));
+
+                foreach (var group in MenuGroups)
+                    foreach (var item in group.Items)
+                        if (favSet.Contains(item.ViewName))
+                            item.IsFavorite = true;
+
+                RebuildFavorites();
+            }
+            catch
+            {
+                // إذا لم يوجد ملف Settings — لا بأس
+            }
+        }
+
         // ─── تحديث عنوان الصفحة ─────────────────────
         private void OnNavigated(string viewName)
         {
@@ -300,10 +391,18 @@ namespace BlockFactory.Desktop.ViewModels
 
             // تحديث حالة الاختيار في القائمة
             foreach (var group in MenuGroups)
+            {
+                bool groupContainsActive = false;
                 foreach (var item in group.Items)
+                {
                     item.IsSelected = item.ViewName == viewName;
-
-            OnPropertyChanged(nameof(MenuGroups));
+                    if (item.IsSelected)
+                        groupContainsActive = true;
+                }
+                // فتح المجموعة الحاوية على العنصر النشط تلقائياً
+                if (groupContainsActive && !group.IsExpanded)
+                    group.IsExpanded = true;
+            }
         }
 
         // تحديث الوقت كل دقيقة

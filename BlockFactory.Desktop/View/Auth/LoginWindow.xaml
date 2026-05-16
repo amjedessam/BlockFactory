@@ -157,12 +157,12 @@
 
                     <!-- اسم التطبيق -->
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="🏭 مصنع البلوك"
+                        <TextBlock Text=" مصنع الكولي"
                                    FontSize="18"
                                    FontWeight="Bold"
                                    Foreground="White"
                                    FontFamily="Segoe UI"/>
-                        <TextBlock Text="نظام الإدارة المتكامل"
+                        <TextBlock Text="نظام اداراة متكامل"
                                    FontSize="11"
                                    Foreground="#BDC3C7"
                                    FontFamily="Segoe UI"
@@ -300,8 +300,7 @@
                            FontSize="11"
                            Foreground="{StaticResource ErpBrushTextSecondary}"
                            FontFamily="Segoe UI">
-                    <Run Text="{Binding AppVersion}"/>
-                    <Run Text=" · جميع الحقوق محفوظة"/>
+               
                 </TextBlock>
             </Border>
         </Grid>
