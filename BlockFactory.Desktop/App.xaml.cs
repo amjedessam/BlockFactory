@@ -1,5 +1,4 @@
-﻿
-using System.Configuration;
+﻿using System.Configuration;
 using System.Data;
 using System.Windows;
 
@@ -26,8 +25,12 @@ namespace BlockFactory.Desktop
             Services = DependencyInjection.Configure();
 
             await InitializeDatabaseAsync();
-          //  var loginWindow = GetService<LoginWindow>();
-               var loginWindow = new LoginWindow();
+
+            // تشغيل النسخ الاحتياطي التلقائي
+            var backupService = GetService<BackupService>();
+            backupService.Start();
+
+            var loginWindow = new LoginWindow();
             loginWindow.Show();
         }
 

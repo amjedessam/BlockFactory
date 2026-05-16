@@ -7,3 +7,4 @@ C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Core\obj\Debug\net6.0\Bl
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Core\obj\Debug\net6.0\BlockFactory.Core.csproj.CoreCompileInputs.cache
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Core\obj\Debug\net6.0\BlockFactory.Core.dll
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Core\obj\Debug\net6.0\BlockFactory.Core.pdb
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Core\obj\Debug\net6.0\BlockFactory.Core.csproj.AssemblyReference.cache

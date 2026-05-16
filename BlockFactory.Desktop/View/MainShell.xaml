@@ -13,24 +13,49 @@
         Background="{StaticResource ErpBrushPageBg}">
 
     <Window.Resources>
-        <!-- Brushes: من EnterpriseTheme (دمج App)؛ تُبقى هنا فقط إن احتاجت لاحقاً أنماط خاصة بالنافذة -->
 
-        <!-- Style: زر التنقل -->
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- ألوان الـ Sidebar                             -->
+        <!-- ══════════════════════════════════════════════ -->
+        <SolidColorBrush x:Key="SidebarBg"       Color="#1E3A5F"/>
+        <SolidColorBrush x:Key="SidebarHover"    Color="#2C4F7C"/>
+        <SolidColorBrush x:Key="SidebarActive"   Color="#E67E22"/>
+        <SolidColorBrush x:Key="SidebarActiveBg" Color="#2A4A72"/>
+        <SolidColorBrush x:Key="TextLight"       Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextMuted"       Color="#8BA5C4"/>
+        <SolidColorBrush x:Key="HeaderBg"        Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="ContentBg"       Color="#F5F7FA"/>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- زر التنقل العادي                              -->
+        <!-- ══════════════════════════════════════════════ -->
         <Style x:Key="NavButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Height" Value="44"/>
+            <Setter Property="Background"              Value="Transparent"/>
+            <Setter Property="BorderThickness"         Value="0"/>
+            <Setter Property="Cursor"                  Value="Hand"/>
+            <Setter Property="Height"                  Value="42"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="FocusVisualStyle"        Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                Margin="8,2">
-                            <ContentPresenter/>
-                        </Border>
+                        <Grid>
+                            <!-- المؤشر الجانبي (يظهر عند التفعيل) -->
+                            <Rectangle x:Name="ActiveIndicator"
+                                       Width="4"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Stretch"
+                                       RadiusX="2" RadiusY="2"
+                                       Fill="{StaticResource SidebarActive}"
+                                       Opacity="0"/>
+                            <!-- خلفية الزر -->
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="8"
+                                    Margin="8,2,8,2">
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border"
@@ -43,40 +68,86 @@
             </Setter>
         </Style>
 
-        <!-- Style: زر التنقل المحدد -->
-        <Style x:Key="NavButtonActive"
-               TargetType="Button"
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- زر التنقل المحدد (Active)                     -->
+        <!-- ══════════════════════════════════════════════ -->
+        <Style x:Key="NavButtonActive" TargetType="Button"
                BasedOn="{StaticResource NavButton}">
-            <Setter Property="Background"
-                    Value="{StaticResource SidebarActive}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <!-- المؤشر البرتقالي على اليمين -->
+                            <Rectangle Width="4"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Stretch"
+                                       RadiusX="2" RadiusY="2"
+                                       Fill="{StaticResource SidebarActive}"
+                                       Margin="0,4,0,4"/>
+                            <!-- خلفية مميزة -->
+                            <Border Background="{StaticResource SidebarActiveBg}"
+                                    CornerRadius="8"
+                                    Margin="8,2,8,2">
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- زر عنوان المجموعة (Collapsible Group Header)  -->
+        <!-- ══════════════════════════════════════════════ -->
+        <Style x:Key="GroupHeaderButton" TargetType="Button">
+            <Setter Property="Background"              Value="Transparent"/>
+            <Setter Property="BorderThickness"         Value="0"/>
+            <Setter Property="Cursor"                  Value="Hand"/>
+            <Setter Property="Height"                  Value="32"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="FocusVisualStyle"        Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="Transparent"
+                                Padding="20,0,12,0">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="#1A2E45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <!-- Sidebar -->
             <ColumnDefinition Width="{Binding SidebarWidth}"/>
-            <!-- Main Content -->
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- ══════════════════════════════════════ -->
-        <!-- SIDEBAR                               -->
-        <!-- ══════════════════════════════════════ -->
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- SIDEBAR                                        -->
+        <!-- ══════════════════════════════════════════════ -->
         <Grid Grid.Column="0"
               Background="{StaticResource SidebarBg}">
             <Grid.RowDefinitions>
-                <!-- Logo -->
                 <RowDefinition Height="Auto"/>
-                <!-- Menu -->
                 <RowDefinition Height="*"/>
-                <!-- User Profile -->
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- ─── Logo Area ─── -->
+            <!-- ─── Logo + Toggle ──────────────────────── -->
             <Border Grid.Row="0"
-                    Padding="16,20"
+                    Padding="16,18"
                     BorderBrush="#2C4F7C"
                     BorderThickness="0,0,0,1">
                 <Grid>
@@ -86,7 +157,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- أيقونة -->
+                    <!-- أيقونة المصنع -->
                     <Border Grid.Column="0"
                             Width="38" Height="38"
                             Background="{StaticResource SidebarActive}"
@@ -114,103 +185,163 @@
                                    FontFamily="Segoe UI"/>
                     </StackPanel>
 
-                    <!-- زر طي السايدبار -->
+                    <!-- زر الطي -->
                     <Button Grid.Column="2"
                             Command="{Binding ToggleSidebarCommand}"
-                            Width="28" Height="28"
+                            Width="30" Height="30"
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
-                            ToolTip="طي القائمة">
+                            ToolTip="طي القائمة / توسيعها">
                         <TextBlock Text="☰"
                                    Foreground="{StaticResource TextMuted}"
-                                   FontSize="14"
+                                   FontSize="16"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Button>
                 </Grid>
             </Border>
 
-            <!-- ─── Navigation Menu ─── -->
+            <!-- ─── Navigation Menu ─────────────────────── -->
             <ScrollViewer Grid.Row="1"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
-                          Margin="0,8,0,0">
+                          Margin="0,6,0,0">
                 <ItemsControl ItemsSource="{Binding MenuGroups}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Margin="0,4,0,0">
+                            <StackPanel Margin="0,2,0,0">
 
-                                <!-- عنوان المجموعة -->
-                                <TextBlock
-                                    Text="{Binding GroupTitle}"
-                                    FontSize="10"
-                                    FontWeight="Bold"
-                                    Foreground="{StaticResource TextMuted}"
-                                    FontFamily="Segoe UI"
-                                    Margin="20,8,0,4"
-                                    Visibility="{Binding DataContext.IsSidebarExpanded,
-                                        RelativeSource={RelativeSource AncestorType=Window},
-                                        Converter={StaticResource BoolToVisibility}}"/>
+                                <!-- عنوان المجموعة — قابل للضغط للطي -->
+                                <Button Style="{StaticResource GroupHeaderButton}"
+                                        Command="{Binding ToggleCommand}"
+                                        Visibility="{Binding DataContext.IsSidebarExpanded,
+                                            RelativeSource={RelativeSource AncestorType=Window},
+                                            Converter={StaticResource BoolToVisibility}}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                <!-- عناصر القائمة -->
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding GroupTitle}"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource TextMuted}"
+                                                   FontFamily="Segoe UI"
+                                                   VerticalAlignment="Center"
+                                                   CharacterSpacing="80"/>
+
+                                        <!-- سهم الطي -->
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding IsExpanded,
+                                                       Converter={StaticResource BoolToTextConverter},
+                                                       ConverterParameter='▲|▼'}"
+                                                   FontSize="8"
+                                                   Foreground="{StaticResource TextMuted}"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Button>
+
+                                <!-- عناصر القائمة (تختفي عند الطي) -->
                                 <ItemsControl ItemsSource="{Binding Items}">
+                                    <ItemsControl.Style>
+                                        <Style TargetType="ItemsControl">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsExpanded}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ItemsControl.Style>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Button
-                                                Style="{StaticResource NavButton}"
-                                                Command="{Binding DataContext.NavigateCommand,
-                                                    RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding ViewName}"
-                                                ToolTip="{Binding Title}">
+                                            <Button Style="{StaticResource NavButton}"
+                                                    Command="{Binding DataContext.NavigateCommand,
+                                                        RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding ViewName}"
+                                                    ToolTip="{Binding Title}">
+
+                                                <!-- Active Style Override -->
+                                                <Button.Resources>
+                                                    <Style TargetType="Button"
+                                                           BasedOn="{StaticResource NavButton}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                <Setter Property="Template">
+                                                                    <Setter.Value>
+                                                                        <ControlTemplate TargetType="Button">
+                                                                            <Grid>
+                                                                                <Rectangle Width="4"
+                                                                                           HorizontalAlignment="Right"
+                                                                                           VerticalAlignment="Stretch"
+                                                                                           RadiusX="2" RadiusY="2"
+                                                                                           Fill="{StaticResource SidebarActive}"
+                                                                                           Margin="0,4,0,4"/>
+                                                                                <Border Background="{StaticResource SidebarActiveBg}"
+                                                                                        CornerRadius="8"
+                                                                                        Margin="8,2,8,2">
+                                                                                    <ContentPresenter VerticalAlignment="Center"/>
+                                                                                </Border>
+                                                                            </Grid>
+                                                                        </ControlTemplate>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Resources>
+
                                                 <Grid Margin="12,0">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="24"/>
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
 
                                                     <!-- الأيقونة -->
-                                                    <TextBlock
-                                                        Grid.Column="0"
-                                                        Text="{Binding Icon}"
-                                                        FontSize="16"
-                                                        VerticalAlignment="Center"
-                                                        Width="24"
-                                                        TextAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding Icon}"
+                                                               FontSize="15"
+                                                               VerticalAlignment="Center"
+                                                               TextAlignment="Center"/>
 
-                                                    <!-- العنوان -->
-                                                    <TextBlock
-                                                        Grid.Column="1"
-                                                        Text="{Binding Title}"
-                                                        FontSize="13"
-                                                        Foreground="{StaticResource TextLight}"
-                                                        FontFamily="Segoe UI"
-                                                        VerticalAlignment="Center"
-                                                        Margin="10,0,0,0"
-                                                        Visibility="{Binding DataContext.IsSidebarExpanded,
-                                                            RelativeSource={RelativeSource AncestorType=Window},
-                                                            Converter={StaticResource BoolToVisibility}}"/>
+                                                    <!-- العنوان (يختفي في وضع المصغر) -->
+                                                    <StackPanel Grid.Column="1"
+                                                                Orientation="Horizontal"
+                                                                VerticalAlignment="Center"
+                                                                Margin="10,0,0,0"
+                                                                Visibility="{Binding DataContext.IsSidebarExpanded,
+                                                                    RelativeSource={RelativeSource AncestorType=Window},
+                                                                    Converter={StaticResource BoolToVisibility}}">
+                                                        <TextBlock Text="{Binding Title}"
+                                                                   FontSize="13"
+                                                                   Foreground="{StaticResource TextLight}"
+                                                                   FontFamily="Segoe UI"
+                                                                   VerticalAlignment="Center"/>
+                                                    </StackPanel>
                                                 </Grid>
                                             </Button>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
 
-                                <!-- فاصل -->
-                                <Separator Background="#2C4F7C"
-                                           Margin="16,8"
-                                           Opacity="0.5"/>
+                                <!-- فاصل بين المجموعات -->
+                                <Rectangle Height="1"
+                                           Fill="#2C4F7C"
+                                           Margin="16,6,16,2"
+                                           Opacity="0.4"/>
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
 
-            <!-- ─── User Profile ─── -->
+            <!-- ─── User Profile ────────────────────────── -->
             <Border Grid.Row="2"
                     BorderBrush="#2C4F7C"
                     BorderThickness="0,1,0,0"
-                    Padding="12,12">
+                    Padding="12,10">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -223,66 +354,65 @@
                             Width="36" Height="36"
                             Background="{StaticResource SidebarActive}"
                             CornerRadius="18">
-                        <TextBlock
-                            Text="{Binding UserInitials}"
-                            Foreground="White"
-                            FontSize="13"
-                            FontWeight="Bold"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            FontFamily="Segoe UI"/>
+                        <TextBlock Text="{Binding UserInitials}"
+                                   Foreground="White"
+                                   FontSize="13"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontFamily="Segoe UI"/>
                     </Border>
 
-                    <!-- Name & Role -->
+                    <!-- الاسم والدور -->
                     <StackPanel Grid.Column="1"
                                 Margin="10,0,0,0"
                                 VerticalAlignment="Center"
                                 Visibility="{Binding IsSidebarExpanded,
                                     Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock
-                            Text="{Binding UserFullName}"
-                            FontSize="12"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource TextLight}"
-                            FontFamily="Segoe UI"/>
-                        <TextBlock
-                            Text="{Binding UserRole}"
-                            FontSize="10"
-                            Foreground="{StaticResource TextMuted}"
-                            FontFamily="Segoe UI"/>
+                        <TextBlock Text="{Binding UserFullName}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextLight}"
+                                   FontFamily="Segoe UI"/>
+                        <TextBlock Text="{Binding UserRole}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource TextMuted}"
+                                   FontFamily="Segoe UI"/>
                     </StackPanel>
 
-                    <!-- زر تسجيل الخروج -->
+                    <!-- زر الخروج -->
                     <Button Grid.Column="2"
                             Command="{Binding LogoutCommand}"
-                            Width="30" Height="30"
+                            Width="32" Height="32"
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
                             ToolTip="تسجيل الخروج"
                             Visibility="{Binding IsSidebarExpanded,
                                 Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock Text="🚪"
-                                   FontSize="16"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                        <Border Background="#C0392B"
+                                CornerRadius="6"
+                                Width="28" Height="28">
+                            <TextBlock Text="🚪"
+                                       FontSize="14"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
                     </Button>
                 </Grid>
             </Border>
         </Grid>
 
-        <!-- ══════════════════════════════════════ -->
-        <!-- MAIN CONTENT AREA                     -->
-        <!-- ══════════════════════════════════════ -->
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- MAIN CONTENT                                   -->
+        <!-- ══════════════════════════════════════════════ -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <!-- Header -->
                 <RowDefinition Height="60"/>
-                <!-- Content -->
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- ─── Top Header ─── -->
+            <!-- ─── Header ──────────────────────────────── -->
             <Border Grid.Row="0"
                     Background="{StaticResource HeaderBg}"
                     BorderBrush="#E5E9EF"
@@ -293,7 +423,6 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- عنوان الصفحة الحالية -->
                     <StackPanel Grid.Column="0"
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal">
@@ -301,32 +430,25 @@
                                    FontSize="16"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
-                        <TextBlock
-                            Text="{Binding CurrentViewTitle}"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource ErpBrushTextPrimary}"
-                            FontFamily="Segoe UI"
-                            VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CurrentViewTitle}"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ErpBrushTextPrimary}"
+                                   FontFamily="Segoe UI"
+                                   VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <!-- الوقت والتاريخ -->
-                    <StackPanel Grid.Column="1"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Left">
-                        <TextBlock
-                            Text="{Binding CurrentTime}"
-                            FontSize="14"
-                            Foreground="{StaticResource ErpBrushTextSecondary}"
-                            FontFamily="Segoe UI"
-                            VerticalAlignment="Center"
-                            Margin="0,0,16,0"/>
-                    </StackPanel>
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding CurrentTime}"
+                               FontSize="14"
+                               Foreground="{StaticResource ErpBrushTextSecondary}"
+                               FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Margin="0,0,16,0"/>
                 </Grid>
             </Border>
 
-            <!-- ─── Page Content ─── -->
+            <!-- ─── Content ─────────────────────────────── -->
             <Border Grid.Row="1"
                     Background="{StaticResource ContentBg}"
                     Padding="{StaticResource ErpPaddingPage}">

@@ -33,7 +33,7 @@ namespace BlockFactory.Core.Services
         public async Task<FinancialSummaryDto> GetFinancialSummaryAsync(
             DateTime from, DateTime to)
         {
-            var dto = new FinancialSummaryDto();
+            var dto =   new FinancialSummaryDto();
 
             // الإيرادات
             dto.TotalRevenue = await _uow.Orders.Query()
