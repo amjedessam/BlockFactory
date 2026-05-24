@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 using BlockFactory.Core.DTOs.Orders;
 using BlockFactory.Core.Interfaces.Services;
@@ -13,6 +14,7 @@ using BlockFactory.Desktop.ViewModels.Base;
 using System.Collections.ObjectModel;
 using BlockFactory.Core.DTOs.Customers;
 using BlockFactory.Desktop.Mappers;
+
 namespace BlockFactory.Desktop.ViewModels.Orders
 {
     public class NewOrderViewModel : BaseViewModel
@@ -20,6 +22,9 @@ namespace BlockFactory.Desktop.ViewModels.Orders
         private readonly IOrderService _orderService;
         private readonly ICustomerService _customerService;
         private readonly IProductService _productService;
+
+        // تفويض عرض dialog الطباعة للـ View (MVVM-safe)
+        public Func<Task<bool>>? PrintRequested { get; set; }
 
         public NewOrderViewModel(
             IOrderService orderService,
@@ -35,16 +40,18 @@ namespace BlockFactory.Desktop.ViewModels.Orders
 
         // ─── بيانات العميل ──────────────────────────
 
+        private CancellationTokenSource? _searchCts;
+
         private string _customerSearch = string.Empty;
-        public string CustomerSearch
+       /* public string CustomerSearch
         {
             get => _customerSearch;
             set
             {
                 SetProperty(ref _customerSearch, value);
-                _ = SearchCustomersAsync(value);
+                _ = SearchCustomersDebounced(value);
             }
-        }
+        }*/
 
         private ObservableCollection<CustomerLookupDto> _customerResults = new();
         public ObservableCollection<CustomerLookupDto> CustomerResults
@@ -53,23 +60,60 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             set => SetProperty(ref _customerResults, value);
         }
 
+
         private CustomerLookupDto? _selectedCustomer;
+        // ✅ إضافة flag لمنع البحث عند اختيار العميل
+        private bool _isSelectingCustomer = false;
+        // ✅ تنظيف الـ setter بالكامل
+        // ✅ setter نظيف — لا خوف من null خارجي
         public CustomerLookupDto? SelectedCustomer
         {
             get => _selectedCustomer;
             set
             {
                 SetProperty(ref _selectedCustomer, value);
+
                 if (value != null)
                 {
+                    _isSelectingCustomer = true;
                     CustomerSearch = value.FullName;
                     CustomerResults.Clear();
-                    OnPropertyChanged(nameof(HasSelectedCustomer));
-                    OnPropertyChanged(nameof(CustomerDebtText));
+                    _isSelectingCustomer = false;
                 }
+
+                // يعمل دائماً — اختيار أو مسح
+                OnPropertyChanged(nameof(HasSelectedCustomer));
+                OnPropertyChanged(nameof(CustomerDebtText));
+                CommandManager.InvalidateRequerySuggested();
             }
         }
-
+        public string CustomerSearch
+        {
+            get => _customerSearch;
+            set
+            {
+                SetProperty(ref _customerSearch, value);
+                if (!_isSelectingCustomer)         // ← لا تبحث عند الاختيار
+                    _ = SearchCustomersDebounced(value);
+            }
+        }
+        /*     public CustomerLookupDto? SelectedCustomer
+             {
+                 get => _selectedCustomer;
+                 set
+                 {
+                     SetProperty(ref _selectedCustomer, value);
+                     if (value != null)
+                     {
+                         CustomerSearch = value.FullName;
+                         CustomerResults.Clear();
+                         OnPropertyChanged(nameof(HasSelectedCustomer));
+                         OnPropertyChanged(nameof(CustomerDebtText));
+                     }
+                     CommandManager.InvalidateRequerySuggested();
+                 }
+             }
+        */
         public bool HasSelectedCustomer => SelectedCustomer != null;
 
         public string CustomerDebtText => SelectedCustomer == null
@@ -106,8 +150,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
 
         public bool IsCredit => SelectedPaymentType == PaymentType.Credit;
         public bool IsPledge => SelectedPaymentType == PaymentType.Pledge;
-        public bool IsElectronic =>
-            SelectedPaymentType == PaymentType.Electronic;
+        public bool IsElectronic => SelectedPaymentType == PaymentType.Electronic;
         public bool ShowDueDate => IsCredit || IsPledge;
         public bool ShowWallet => IsElectronic;
         public bool ShowInitialPayment =>
@@ -132,8 +175,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             }
         }
 
-        public bool IsDelivery =>
-            SelectedDeliveryType == DeliveryType.Delivery;
+        public bool IsDelivery => SelectedDeliveryType == DeliveryType.Delivery;
 
         private decimal _deliveryCost;
         public decimal DeliveryCost
@@ -217,11 +259,8 @@ namespace BlockFactory.Desktop.ViewModels.Orders
 
         // ─── عناصر الطلب ────────────────────────────
 
-        public ObservableCollection<OrderItemViewModel> OrderItems { get; }
-            = new();
-
-        public ObservableCollection<ProductLookupDto> AvailableProducts { get; }
-            = new();
+        public ObservableCollection<OrderItemViewModel> OrderItems { get; } = new();
+        public ObservableCollection<ProductLookupDto> AvailableProducts { get; } = new();
 
         private ProductLookupDto? _selectedProduct;
         public ProductLookupDto? SelectedProduct
@@ -259,8 +298,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
 
         public string NewItemPriceRange => SelectedProduct == null
             ? string.Empty
-            : $"النطاق: {SelectedProduct.PriceMin:N0} — " +
-              $"{SelectedProduct.PriceMax:N0} ر.ي";
+            : $"النطاق: {SelectedProduct.PriceMin:N0} — {SelectedProduct.PriceMax:N0} ر.ي";
 
         public bool IsPriceValid => SelectedProduct == null ||
             (NewItemPrice >= SelectedProduct.PriceMin &&
@@ -279,6 +317,9 @@ namespace BlockFactory.Desktop.ViewModels.Orders
         public decimal TotalAmount
         {
             get => _totalAmount;
+            // ✅ setter بسيط فقط — InvalidateRequerySuggested تُستدعى
+            // في الأماكن الصريحة (AddItem, RemoveItem, ClearForm, SaveAsync)
+            // وليس داخل setter لتجنب re-entrancy conflict
             set => SetProperty(ref _totalAmount, value);
         }
 
@@ -323,16 +364,11 @@ namespace BlockFactory.Desktop.ViewModels.Orders
 
         // ─── Commands ───────────────────────────────
 
-        public AsyncRelayCommand LoadDataCommand { get; private set; }
-            = null!;
-        public RelayCommand AddItemCommand { get; private set; }
-            = null!;
-        public RelayCommand RemoveItemCommand { get; private set; }
-            = null!;
-        public AsyncRelayCommand SaveOrderCommand { get; private set; }
-            = null!;
-        public RelayCommand ClearFormCommand { get; private set; }
-            = null!;
+        public AsyncRelayCommand LoadDataCommand { get; private set; } = null!;
+        public RelayCommand AddItemCommand { get; private set; } = null!;
+        public RelayCommand RemoveItemCommand { get; private set; } = null!;
+        public AsyncRelayCommand SaveOrderCommand { get; private set; } = null!;
+        public RelayCommand ClearFormCommand { get; private set; } = null!;
 
         private void InitializeCommands()
         {
@@ -351,6 +387,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
                 {
                     OrderItems.Remove(item);
                     RecalculateTotals();
+                    CommandManager.InvalidateRequerySuggested();
                 }
             });
 
@@ -358,8 +395,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
                 async _ => await SaveOrderAsync(),
                 _ => CanSave());
 
-            ClearFormCommand = new RelayCommand(
-                _ => ClearForm());
+            ClearFormCommand = new RelayCommand(_ => ClearForm());
         }
 
         private void InitializeDefaults()
@@ -390,17 +426,34 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             }
         }
 
+        // Debounce 300ms لمنع استدعاء API عند كل حرف
+        private async Task SearchCustomersDebounced(string keyword)
+        {
+            _searchCts?.Cancel();
+            _searchCts = new CancellationTokenSource();
+            var token = _searchCts.Token;
+
+            try
+            {
+                await Task.Delay(300, token);
+                if (!token.IsCancellationRequested)
+                    await SearchCustomersAsync(keyword);
+            }
+            catch (TaskCanceledException)
+            {
+                // متوقع — المستخدم يكتب بسرعة
+            }
+        }
+
         private async Task SearchCustomersAsync(string keyword)
         {
-            if (string.IsNullOrWhiteSpace(keyword) ||
-                keyword.Length < 2)
+            if (string.IsNullOrWhiteSpace(keyword) || keyword.Length < 2)
             {
                 CustomerResults.Clear();
                 return;
             }
 
-            var results = await _customerService
-                .SearchCustomersAsync(keyword);
+            var results = await _customerService.SearchCustomersAsync(keyword);
 
             CustomerResults.Clear();
             foreach (var c in results)
@@ -417,7 +470,6 @@ namespace BlockFactory.Desktop.ViewModels.Orders
         {
             if (SelectedProduct == null) return;
 
-            // التحقق من وجود المنتج مسبقاً
             var existing = OrderItems.FirstOrDefault(
                 i => i.ProductId == SelectedProduct.Id);
 
@@ -443,11 +495,11 @@ namespace BlockFactory.Desktop.ViewModels.Orders
                 OrderItems.Add(item);
             }
 
-            // تصفير الاختيار
             SelectedProduct = null;
             NewItemQuantity = 1;
             NewItemPrice = 0;
             RecalculateTotals();
+            CommandManager.InvalidateRequerySuggested();
         }
 
         private void RecalculateTotals()
@@ -475,15 +527,12 @@ namespace BlockFactory.Desktop.ViewModels.Orders
         {
             if (!CanSave()) return;
 
-            // التحقق من الرهن
-            if (IsPledge &&
-                string.IsNullOrWhiteSpace(PledgeDescription))
+            if (IsPledge && string.IsNullOrWhiteSpace(PledgeDescription))
             {
                 ShowError("يرجى إدخال وصف الرهن");
                 return;
             }
 
-            // التحقق من تاريخ الاستحقاق
             if (ShowDueDate && DueDate == null)
             {
                 ShowError("يرجى تحديد تاريخ الاستحقاق");
@@ -504,22 +553,27 @@ namespace BlockFactory.Desktop.ViewModels.Orders
                     DeliveryType = SelectedDeliveryType,
                     DeliveryCost = IsDelivery ? DeliveryCost : 0,
                     Discount = Discount,
+
+                    // ✅ الإصلاح الجوهري:
+                    // نقد فقط = مدفوع بالكامل
+                    // أي نوع آخر = الدفعة الأولى التي أدخلها المستخدم
                     InitialPayment = SelectedPaymentType == PaymentType.Cash
-                        ? TotalAmount : InitialPayment,
+                        ? TotalAmount
+                        : InitialPayment,
+
                     ElectronicWalletName = SelectedWallet,
                     TransactionReference = TransactionReference,
                     Notes = Notes,
 
-                    Items = OrderItems.Select(i =>
-                        new CreateOrderItemDto
-                        {
-                            ProductId = i.ProductId,
-                            ProductName = i.ProductName,
-                            Quantity = i.Quantity,
-                            UnitPrice = i.UnitPrice,
-                            PriceMin = i.PriceMin,
-                            PriceMax = i.PriceMax
-                        }).ToList(),
+                    Items = OrderItems.Select(i => new CreateOrderItemDto
+                    {
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice,
+                        PriceMin = i.PriceMin,
+                        PriceMax = i.PriceMax
+                    }).ToList(),
 
                     Pledge = IsPledge ? new CreatePledgeDto
                     {
@@ -536,19 +590,12 @@ namespace BlockFactory.Desktop.ViewModels.Orders
                 {
                     ShowSuccess(result.Message);
 
-                    // سؤال الطباعة
-                    var print = System.Windows.MessageBox.Show(
-                        "هل تريد طباعة الفاتورة؟",
-                        "طباعة",
-                        System.Windows.MessageBoxButton.YesNo,
-                        System.Windows.MessageBoxImage.Question,
-                        System.Windows.MessageBoxResult.Yes,
-                        System.Windows.MessageBoxOptions.RightAlign |
-                        System.Windows.MessageBoxOptions.RtlReading);
+                    // ✅ MVVM-safe: الـ View يتعامل مع MessageBox
+                    bool shouldPrint = PrintRequested != null &&
+                                       await PrintRequested.Invoke();
 
-                    if (print == System.Windows.MessageBoxResult.Yes)
-                        await _orderService.GenerateInvoicePdfAsync(
-                            result.Data);
+                    if (shouldPrint)
+                        await _orderService.GenerateInvoicePdfAsync(result.Data);
 
                     ClearForm();
                 }
@@ -564,6 +611,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             finally
             {
                 IsLoading = false;
+                CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -588,6 +636,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             TotalAmount = 0;
             RemainingAmount = 0;
             ClearMessages();
+            CommandManager.InvalidateRequerySuggested();
         }
     }
 
@@ -611,6 +660,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             {
                 SetProperty(ref _quantity, value);
                 RecalculateTotal();
+                OnPropertyChanged(nameof(IsLowStock));
             }
         }
 
@@ -632,9 +682,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             set => SetProperty(ref _totalPrice, value);
         }
 
-        public string PriceRangeText =>
-            $"{PriceMin:N0} — {PriceMax:N0}";
-
+        public string PriceRangeText => $"{PriceMin:N0} — {PriceMax:N0}";
         public bool IsLowStock => AvailableStock < Quantity;
 
         public void RecalculateTotal()

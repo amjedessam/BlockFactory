@@ -36,7 +36,26 @@ namespace BlockFactory.Desktop.Services
         }
 
         public void SetFrame(ContentControl frame)
-            => _frame = frame;
+        {
+            _frame = frame;
+
+            // إذا لم يكن هناك عرض حالي (تمت محاولة التنقل قبل ربط الإطار)،
+            // نفترض أن الصفحة الافتراضية هي "Dashboard" ونقوم بالتنقل لها الآن.
+            if (string.IsNullOrEmpty(CurrentView))
+            {
+                NavigateTo("Dashboard");
+            }
+            else
+            {
+                // في حال كان هناك عرض مسجّل مسبقاً، اعرضه مباشرةً في الإطار.
+                var view = ResolveView(CurrentView);
+                if (view != null)
+                {
+                    _frame.Content = view;
+                    OnNavigated?.Invoke(CurrentView);
+                }
+            }
+        }
 
         public void NavigateTo(string viewName)
         {

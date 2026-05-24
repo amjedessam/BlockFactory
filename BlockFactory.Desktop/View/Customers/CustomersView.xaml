@@ -17,7 +17,8 @@
         <!-- ══════════════════════════════════════════ -->
         <!-- القائمة الرئيسية                         -->
         <!-- ══════════════════════════════════════════ -->
-        <Grid Grid.Column="0" Margin="0,0,12,0">
+        <Grid Grid.Column="0"
+                Margin="0,0,12,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -33,8 +34,10 @@
                     Padding="16,12"
                     Margin="0,0,0,12">
                 <Border.Effect>
-                    <DropShadowEffect Color="#000" Opacity="0.05"
-                                      BlurRadius="8" ShadowDepth="1"/>
+                    <DropShadowEffect Color="#000"
+                            Opacity="0.05"
+                                      BlurRadius="8"
+                            ShadowDepth="1"/>
                 </Border.Effect>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -55,7 +58,8 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0"
-                                       Text="🔍" FontSize="14"
+                                       Text="🔍"
+                                    FontSize="14"
                                        Margin="10,0,0,0"
                                        VerticalAlignment="Center"/>
                             <TextBox Grid.Column="1"
@@ -78,7 +82,8 @@
 
                         <Button Content="🔄 تحديث"
                                 Command="{Binding LoadCommand}"
-                                Height="36" Padding="12,0"
+                                Height="36"
+                                Padding="12,0"
                                 Margin="0,0,8,0"
                                 Background="{StaticResource ErpBrushPageBg}"
                                 BorderThickness="1"
@@ -89,7 +94,8 @@
 
                         <Button Content="✏️ تعديل"
                                 Command="{Binding ShowEditFormCommand}"
-                                Height="36" Padding="12,0"
+                                Height="36"
+                                Padding="12,0"
                                 Margin="0,0,8,0"
                                 Background="#2980B9"
                                 Foreground="White"
@@ -102,7 +108,8 @@
                                 Command="{Binding DeleteCommand}"
                                 Visibility="{Binding CanDeleteCustomer,
                                     Converter={StaticResource BoolToVisibility}}"
-                                Height="36" Padding="12,0"
+                                Height="36"
+                                Padding="12,0"
                                 Margin="0,0,8,0"
                                 Background="#E74C3C"
                                 Foreground="White"
@@ -113,7 +120,8 @@
 
                         <Button Content="➕ عميل جديد"
                                 Command="{Binding ShowAddFormCommand}"
-                                Height="36" Padding="16,0"
+                                Height="36"
+                                Padding="16,0"
                                 Background="#E67E22"
                                 Foreground="White"
                                 BorderThickness="0"
@@ -129,82 +137,174 @@
             <StackPanel Grid.Row="1"
                         Orientation="Horizontal"
                         Margin="0,0,0,12">
-                <ItemsControl ItemsSource="{Binding FilterOptions}">
-                    <ItemsControl.ItemsPanel>
+                <ListBox ItemsSource="{Binding FilterOptions}"
+                         SelectedItem="{Binding SelectedFilter,
+                             Mode=TwoWay}"
+                         BorderThickness="0"
+                         Background="Transparent">
+                    <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
                         </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Margin="0,0,8,0"
-                                    CornerRadius="20"
-                                    Padding="14,6"
-                                    Cursor="Hand">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Background"
-                                                Value="{StaticResource ErpBrushCard}"/>
-                                        <Setter Property="BorderBrush"
-                                                Value="{StaticResource ErpBrushBorderInput}"/>
-                                        <Setter Property="BorderThickness"
-                                                Value="1"/>
-                                    </Style>
-                                </Border.Style>
-                                <TextBlock
-                                    Text="{Binding}"
-                                    FontSize="12"
-                                    FontFamily="Segoe UI"
-                                    Foreground="#555"/>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                    </ListBox.ItemsPanel>
+
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding"
+                                    Value="0"/>
+                            <Setter Property="Margin"
+                                    Value="2,0"/>
+                            <Setter Property="Background"
+                                    Value="Transparent"/>
+                            <Setter Property="BorderThickness"
+                                    Value="0"/>
+                            <Setter Property="Cursor"
+                                    Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="Pill"
+                                                CornerRadius="8"
+                                                Padding="16,7"
+                                                Background="Transparent">
+                                            <StackPanel Orientation="Horizontal">
+                                                <!-- نقظة للحالة -->
+                                                <Ellipse x:Name="Dot"
+                                                         Width="7"
+                                                        Height="7"
+                                                         Margin="0,0,7,0"
+                                                         VerticalAlignment="Center"
+                                                         Fill="#BDC3C7"
+                                                         Visibility="Collapsed"/>
+                                                <TextBlock x:Name="Label"
+                                                           Text="{TemplateBinding Content}"
+                                                           FontSize="12.5"
+                                                           FontWeight="SemiBold"
+                                                           FontFamily="Segoe UI"
+                                                           Foreground="#777"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected"
+                                                    Value="True">
+                                                <Setter TargetName="Pill"
+                                                        Property="Background"
+                                                        Value="#1A73E8"/>
+                                                <Setter TargetName="Label"
+                                                        Property="Foreground"
+                                                        Value="White"/>
+                                                <Setter TargetName="Label"
+                                                        Property="FontWeight"
+                                                        Value="Bold"/>
+                                                <Setter TargetName="Dot"
+                                                        Property="Visibility"
+                                                        Value="Visible"/>
+                                                <Setter TargetName="Dot"
+                                                        Property="Fill"
+                                                        Value="White"/>
+                                                <Setter TargetName="Pill"
+                                                        Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect
+                                                            Color="#1A73E8"
+                                                            Opacity="0.35"
+                                                            BlurRadius="10"
+                                                            ShadowDepth="0"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+
+                                            <Trigger Property="IsMouseOver"
+                                                    Value="True">
+                                                <Setter TargetName="Pill"
+                                                        Property="Background"
+                                                        Value="#EEF4FD"/>
+                                                <Setter TargetName="Label"
+                                                        Property="Foreground"
+                                                        Value="#1A73E8"/>
+                                            </Trigger>
+
+                                            <MultiTrigger>
+                                                <MultiTrigger.Conditions>
+                                                    <Condition Property="IsSelected"
+                                                            Value="True"/>
+                                                    <Condition Property="IsMouseOver"
+                                                            Value="True"/>
+                                                </MultiTrigger.Conditions>
+                                                <Setter TargetName="Pill"
+                                                        Property="Background"
+                                                        Value="#1558C0"/>
+                                                <Setter TargetName="Label"
+                                                        Property="Foreground"
+                                                        Value="White"/>
+                                            </MultiTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
             </StackPanel>
 
             <!-- ─── إحصائيات ─── -->
-            <UniformGrid Grid.Row="2" Columns="3"
+            <UniformGrid Grid.Row="2"
+                    Columns="3"
                          Margin="0,0,0,12">
-                <Border Background="{StaticResource ErpBrushCard}" CornerRadius="10"
-                        Padding="14,10" Margin="0,0,10,0">
+                <Border Background="{StaticResource ErpBrushCard}"
+                        CornerRadius="10"
+                        Padding="14,10"
+                        Margin="0,0,10,0">
                     <StackPanel>
                         <TextBlock Text="إجمالي العملاء"
-                                   FontSize="11" Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   FontSize="11"
+                                Foreground="{StaticResource ErpBrushTextSecondary}"
                                    FontFamily="Segoe UI"/>
                         <TextBlock
                             Text="{Binding TotalCustomers}"
-                            FontSize="22" FontWeight="Bold"
+                            FontSize="22"
+                                FontWeight="Bold"
                             Foreground="{StaticResource ErpBrushNavSidebar}"
                             FontFamily="Segoe UI"/>
                     </StackPanel>
                 </Border>
 
-                <Border Background="{StaticResource ErpBrushCard}" CornerRadius="10"
-                        Padding="14,10" Margin="0,0,10,0">
+                <Border Background="{StaticResource ErpBrushCard}"
+                        CornerRadius="10"
+                        Padding="14,10"
+                        Margin="0,0,10,0">
                     <StackPanel>
                         <TextBlock Text="لديهم ديون"
-                                   FontSize="11" Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   FontSize="11"
+                                Foreground="{StaticResource ErpBrushTextSecondary}"
                                    FontFamily="Segoe UI"/>
                         <TextBlock
                             Text="{Binding CustomersWithDebt}"
-                            FontSize="22" FontWeight="Bold"
+                            FontSize="22"
+                                FontWeight="Bold"
                             Foreground="#E74C3C"
                             FontFamily="Segoe UI"/>
                     </StackPanel>
                 </Border>
 
-                <Border Background="{StaticResource ErpBrushCard}" CornerRadius="10"
+                <Border Background="{StaticResource ErpBrushCard}"
+                        CornerRadius="10"
                         Padding="14,10">
                     <StackPanel>
                         <TextBlock Text="إجمالي الديون"
-                                   FontSize="11" Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   FontSize="11"
+                                Foreground="{StaticResource ErpBrushTextSecondary}"
                                    FontFamily="Segoe UI"/>
-                        <TextBlock FontSize="18" FontWeight="Bold"
+                        <TextBlock FontSize="18"
+                                FontWeight="Bold"
                                    Foreground="#E74C3C"
                                    FontFamily="Segoe UI">
                             <Run Text="{Binding TotalDebt,
                                 StringFormat='{}{0:N0}'}"/>
-                            <Run Text=" ر.ي" FontSize="12"
+                            <Run Text=" ر.ي"
+                                    FontSize="12"
                                  Foreground="{StaticResource ErpBrushTextSecondary}"/>
                         </TextBlock>
                     </StackPanel>
@@ -216,8 +316,10 @@
                     Background="{StaticResource ErpBrushCard}"
                     CornerRadius="12">
                 <Border.Effect>
-                    <DropShadowEffect Color="#000" Opacity="0.05"
-                                      BlurRadius="8" ShadowDepth="1"/>
+                    <DropShadowEffect Color="#000"
+                            Opacity="0.05"
+                                      BlurRadius="8"
+                            ShadowDepth="1"/>
                 </Border.Effect>
                 <DataGrid
                     ItemsSource="{Binding Customers}"
@@ -239,32 +341,42 @@
 
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="#F8F9FA"/>
-                            <Setter Property="Foreground" Value="{StaticResource ErpBrushTextSecondary}"/>
-                            <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="Padding" Value="14,10"/>
-                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Background"
+                                    Value="#F8F9FA"/>
+                            <Setter Property="Foreground"
+                                    Value="{StaticResource ErpBrushTextSecondary}"/>
+                            <Setter Property="FontSize"
+                                    Value="12"/>
+                            <Setter Property="FontWeight"
+                                    Value="SemiBold"/>
+                            <Setter Property="Padding"
+                                    Value="14,10"/>
+                            <Setter Property="BorderThickness"
+                                    Value="0"/>
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
 
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="اسم العميل"
-                            Binding="{Binding FullName}" Width="*"/>
+                                            Binding="{Binding FullName}"
+                                Width="*"/>
 
                         <DataGridTextColumn Header="الهاتف"
-                            Binding="{Binding Phone}" Width="120"/>
+                                            Binding="{Binding Phone}"
+                                Width="120"/>
 
                         <DataGridTextColumn Header="عدد الطلبات"
-                            Binding="{Binding TotalOrders}" Width="100"/>
+                                            Binding="{Binding TotalOrders}"
+                                Width="100"/>
 
                         <DataGridTextColumn Header="إجمالي المشتريات"
-                            Binding="{Binding TotalPurchases,
+                                            Binding="{Binding TotalPurchases,
                                 StringFormat='{}{0:N0} ر.ي'}"
-                            Width="140"/>
+                                            Width="140"/>
 
                         <!-- الدين بلون -->
-                        <DataGridTemplateColumn Header="الدين" Width="130">
+                        <DataGridTemplateColumn Header="الدين"
+                                Width="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock
@@ -283,11 +395,13 @@
                         </DataGridTemplateColumn>
 
                         <!-- أيقونة الرهن -->
-                        <DataGridTemplateColumn Header="رهن" Width="50">
+                        <DataGridTemplateColumn Header="رهن"
+                                Width="50">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock
-                                        Text="🔒" FontSize="14"
+                                        Text="🔒"
+                                            FontSize="14"
                                         HorizontalAlignment="Center"
                                         Visibility="{Binding HasActivePledge,
                                             Converter={StaticResource BoolToVisibility}}"/>
@@ -299,14 +413,17 @@
             </Border>
 
             <!-- رسائل -->
-            <Border Grid.Row="4" Padding="12,8" CornerRadius="8"
+            <Border Grid.Row="4"
+                    Padding="12,8"
+                    CornerRadius="8"
                     Margin="0,8,0,0"
                     Visibility="{Binding HasError,
                         Converter={StaticResource BoolToVisibility}}"
                     Background="#FDEDEC">
                 <TextBlock Text="{Binding ErrorMessage}"
                            Foreground="#E74C3C"
-                           FontFamily="Segoe UI" FontSize="13"/>
+                           FontFamily="Segoe UI"
+                        FontSize="13"/>
             </Border>
         </Grid>
 
@@ -321,8 +438,10 @@
                 Visibility="{Binding IsFormVisible,
                     Converter={StaticResource BoolToVisibility}}">
             <Border.Effect>
-                <DropShadowEffect Color="#000" Opacity="0.05"
-                                  BlurRadius="10" ShadowDepth="2"/>
+                <DropShadowEffect Color="#000"
+                        Opacity="0.05"
+                                  BlurRadius="10"
+                        ShadowDepth="2"/>
             </Border.Effect>
             <StackPanel>
                 <TextBlock
@@ -334,13 +453,16 @@
                     Margin="0,0,0,20"/>
 
                 <!-- الاسم -->
-                <TextBlock Text="الاسم الكامل *"
-                           FontSize="12" FontWeight="SemiBold"
-                           Foreground="#555" FontFamily="Segoe UI"
+                <TextBlock Text="الاسم الكامل "
+                           FontSize="12"
+                        FontWeight="SemiBold"
+                           Foreground="#555"
+                        FontFamily="Segoe UI"
                            Margin="0,0,0,5"/>
                 <TextBox Text="{Binding FormName,
                              UpdateSourceTrigger=PropertyChanged}"
-                         Height="38" FontSize="13"
+                         Height="38"
+                        FontSize="13"
                          FontFamily="Segoe UI"
                          Padding="10,0"
                          VerticalContentAlignment="Center"
@@ -350,12 +472,15 @@
 
                 <!-- الهاتف -->
                 <TextBlock Text="رقم الهاتف"
-                           FontSize="12" FontWeight="SemiBold"
-                           Foreground="#555" FontFamily="Segoe UI"
+                           FontSize="12"
+                        FontWeight="SemiBold"
+                           Foreground="#555"
+                        FontFamily="Segoe UI"
                            Margin="0,0,0,5"/>
                 <TextBox Text="{Binding FormPhone,
                              UpdateSourceTrigger=PropertyChanged}"
-                         Height="38" FontSize="13"
+                         Height="38"
+                        FontSize="13"
                          FontFamily="Segoe UI"
                          Padding="10,0"
                          VerticalContentAlignment="Center"
@@ -365,12 +490,15 @@
 
                 <!-- العنوان -->
                 <TextBlock Text="العنوان"
-                           FontSize="12" FontWeight="SemiBold"
-                           Foreground="#555" FontFamily="Segoe UI"
+                           FontSize="12"
+                        FontWeight="SemiBold"
+                           Foreground="#555"
+                        FontFamily="Segoe UI"
                            Margin="0,0,0,5"/>
                 <TextBox Text="{Binding FormAddress,
                              UpdateSourceTrigger=PropertyChanged}"
-                         Height="38" FontSize="13"
+                         Height="38"
+                        FontSize="13"
                          FontFamily="Segoe UI"
                          Padding="10,0"
                          VerticalContentAlignment="Center"
@@ -380,8 +508,10 @@
 
                 <!-- ملاحظات -->
                 <TextBlock Text="ملاحظات"
-                           FontSize="12" FontWeight="SemiBold"
-                           Foreground="#555" FontFamily="Segoe UI"
+                           FontSize="12"
+                        FontWeight="SemiBold"
+                           Foreground="#555"
+                        FontFamily="Segoe UI"
                            Margin="0,0,0,5"/>
                 <TextBox Text="{Binding FormNotes,
                              UpdateSourceTrigger=PropertyChanged}"
@@ -397,23 +527,29 @@
                          Margin="0,0,0,20"/>
 
                 <!-- رسائل -->
-                <Border Background="#FDEDEC" CornerRadius="8"
-                        Padding="10,6" Margin="0,0,0,10"
+                <Border Background="#FDEDEC"
+                        CornerRadius="8"
+                        Padding="10,6"
+                        Margin="0,0,0,10"
                         Visibility="{Binding HasError,
                             Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Text="{Binding ErrorMessage}"
                                Foreground="#E74C3C"
-                               FontSize="12" FontFamily="Segoe UI"
+                               FontSize="12"
+                            FontFamily="Segoe UI"
                                TextWrapping="Wrap"/>
                 </Border>
 
-                <Border Background="#EAFAF1" CornerRadius="8"
-                        Padding="10,6" Margin="0,0,0,10"
+                <Border Background="#EAFAF1"
+                        CornerRadius="8"
+                        Padding="10,6"
+                        Margin="0,0,0,10"
                         Visibility="{Binding SuccessMessage,
                             Converter={StaticResource StringToVisibility}}">
                     <TextBlock Text="{Binding SuccessMessage}"
                                Foreground="#27AE60"
-                               FontSize="12" FontFamily="Segoe UI"/>
+                               FontSize="12"
+                            FontFamily="Segoe UI"/>
                 </Border>
 
                 <!-- أزرار -->

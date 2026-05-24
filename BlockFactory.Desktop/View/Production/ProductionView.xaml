@@ -32,14 +32,6 @@
                         <TextBlock Text="إنتاج اليوم"
                                    FontSize="12" Foreground="{StaticResource ErpBrushTextSecondary}"
                                    FontFamily="Segoe UI"/>
-                        <Border Width="34" Height="34"
-                                Background="#EBF5FB"
-                                CornerRadius="10"
-                                HorizontalAlignment="Left">
-                            <TextBlock Text="🏭" FontSize="16"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                        </Border>
                     </Grid>
                     <TextBlock
                         FontSize="28" FontWeight="Bold"
@@ -257,7 +249,7 @@
                         <Border Grid.Row="0" Padding="16,12"
                                 BorderBrush="{StaticResource ErpBrushBorder}"
                                 BorderThickness="0,0,0,1">
-                            <TextBlock Text="🏭 سجلات الإنتاج"
+                            <TextBlock Text=" سجلات الإنتاج"
                                        FontSize="14" FontWeight="Bold"
                                        Foreground="{StaticResource ErpBrushTextPrimary}"
                                        FontFamily="Segoe UI"/>
@@ -419,14 +411,14 @@
                 </Border.Effect>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="🏭 تسجيل إنتاج جديد"
+                        <TextBlock Text=" تسجيل إنتاج جديد"
                                    FontSize="15" FontWeight="Bold"
                                    Foreground="{StaticResource ErpBrushNavSidebar}"
                                    FontFamily="Segoe UI"
                                    Margin="0,0,0,16"/>
 
                         <!-- نوع البلوك -->
-                        <TextBlock Text="نوع البلوك *"
+                        <TextBlock Text="نوع البلوك "
                                    FontSize="12" FontWeight="SemiBold"
                                    Foreground="#555"
                                    FontFamily="Segoe UI"
@@ -465,7 +457,7 @@
 
                             <StackPanel Grid.Column="0"
                                         Margin="0,0,8,0">
-                                <TextBlock Text="الكمية المنتجة *"
+                                <TextBlock Text="الكمية المنتجة "
                                            FontSize="12"
                                            FontWeight="SemiBold"
                                            Foreground="#555"

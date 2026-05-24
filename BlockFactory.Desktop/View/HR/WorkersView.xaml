@@ -324,7 +324,7 @@
                                Margin="0,0,0,16"/>
 
                     <!-- الاسم -->
-                    <TextBlock Text="الاسم الكامل *"
+                    <TextBlock Text="الاسم الكامل "
                                FontSize="12" FontWeight="SemiBold"
                                Foreground="#555"
                                FontFamily="Segoe UI"
@@ -372,7 +372,7 @@
                              Margin="0,0,0,12"/>
 
                     <!-- الراتب -->
-                    <TextBlock Text="الراتب الأساسي (ر.ي) *"
+                    <TextBlock Text="الراتب الأساسي (ر.ي) "
                                FontSize="12" FontWeight="SemiBold"
                                Foreground="#555"
                                FontFamily="Segoe UI"
@@ -490,7 +490,7 @@
                 </TextBlock>
 
                 <!-- مبلغ السلفة -->
-                <TextBlock Text="مبلغ السلفة (ر.ي) *"
+                <TextBlock Text="مبلغ السلفة (ر.ي) "
                            FontSize="12" FontWeight="SemiBold"
                            Foreground="#555"
                            FontFamily="Segoe UI"

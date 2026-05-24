@@ -21,13 +21,6 @@ namespace BlockFactory.Desktop.Services
                     Environment.SpecialFolder.MyDocuments),
                 "BlockFactory_Backups");
 
-        private static readonly string DbPath =
-            Path.Combine(
-                Environment.GetFolderPath(
-                    Environment.SpecialFolder.LocalApplicationData),
-                "BlockFactory",
-                "BlockFactoryDB.mdf");
-
         public BackupService()
         {
             // النسخ الاحتياطي كل 4 ساعات

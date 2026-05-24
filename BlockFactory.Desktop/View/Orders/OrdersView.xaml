@@ -152,31 +152,124 @@
         </Border>
 
         <!-- ─── فلاتر الحالة ─── -->
-        <StackPanel Grid.Row="1"
-                    Orientation="Horizontal"
-                    Margin="0,0,0,12">
-            <ItemsControl ItemsSource="{Binding FilterOptions}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Button Content="{Binding}"
-                                Height="32"
-                                Padding="16,0"
-                                Margin="0,0,8,0"
-                                Cursor="Hand"
-                                FontFamily="Segoe UI"
-                                FontSize="12"
-                                Command="{Binding DataContext.FilterCommand,
-                                    RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding}"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
+        <Border Grid.Row="1" Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Segmented Filter Bar -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource ErpBrushCard}"
+                        CornerRadius="12"
+                        Padding="4"
+                        BorderThickness="1"
+                        BorderBrush="{StaticResource ErpBrushBorderInput}">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#000" Opacity="0.05"
+                                          BlurRadius="8" ShadowDepth="1"/>
+                    </Border.Effect>
+
+                    <ListBox ItemsSource="{Binding FilterOptions}"
+                             SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                             BorderThickness="0"
+                             Background="Transparent">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding"         Value="0"/>
+                                <Setter Property="Margin"          Value="2,0"/>
+                                <Setter Property="Background"      Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Cursor"          Value="Hand"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border x:Name="Pill"
+                                                    CornerRadius="8"
+                                                    Padding="16,7"
+                                                    Background="Transparent">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <!-- نقطة الحالة -->
+                                                    <Ellipse x:Name="Dot"
+                                                             Width="7" Height="7"
+                                                             Margin="0,0,7,0"
+                                                             VerticalAlignment="Center"
+                                                             Fill="#BDC3C7"
+                                                             Visibility="Collapsed"/>
+                                                    <TextBlock x:Name="Label"
+                                                               Text="{TemplateBinding Content}"
+                                                               FontSize="12.5"
+                                                               FontWeight="SemiBold"
+                                                               FontFamily="Segoe UI"
+                                                               Foreground="#777"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Pill"
+                                                            Property="Background"
+                                                            Value="#1A73E8"/>
+                                                    <Setter TargetName="Label"
+                                                            Property="Foreground"
+                                                            Value="White"/>
+                                                    <Setter TargetName="Label"
+                                                            Property="FontWeight"
+                                                            Value="Bold"/>
+                                                    <Setter TargetName="Dot"
+                                                            Property="Visibility"
+                                                            Value="Visible"/>
+                                                    <Setter TargetName="Dot"
+                                                            Property="Fill"
+                                                            Value="White"/>
+                                                    <Setter TargetName="Pill"
+                                                            Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect
+                                                                Color="#1A73E8"
+                                                                Opacity="0.35"
+                                                                BlurRadius="10"
+                                                                ShadowDepth="0"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Pill"
+                                                            Property="Background"
+                                                            Value="#EEF4FD"/>
+                                                    <Setter TargetName="Label"
+                                                            Property="Foreground"
+                                                            Value="#1A73E8"/>
+                                                </Trigger>
+                                                <MultiTrigger>
+                                                    <MultiTrigger.Conditions>
+                                                        <Condition Property="IsSelected" Value="True"/>
+                                                        <Condition Property="IsMouseOver" Value="True"/>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter TargetName="Pill"
+                                                            Property="Background"
+                                                            Value="#1558C0"/>
+                                                    <Setter TargetName="Label"
+                                                            Property="Foreground"
+                                                            Value="White"/>
+                                                </MultiTrigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </Border>
+            </Grid>
+        </Border>
 
         <!-- ─── بطاقات الإجماليات ─── -->
         <UniformGrid Grid.Row="2" Columns="4"
@@ -277,99 +370,99 @@
                       FontSize="13"
                       RowHeight="42">
 
-                <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="#F8F9FA"/>
-                        <Setter Property="Foreground" Value="{StaticResource ErpBrushTextSecondary}"/>
-                        <Setter Property="FontSize" Value="12"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="Padding" Value="14,10"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                    </Style>
-                </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F8F9FA"/>
+                            <Setter Property="Foreground" Value="{StaticResource ErpBrushTextSecondary}"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Padding" Value="14,10"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
 
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="رقم الطلب"
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="رقم الطلب"
                         Binding="{Binding OrderNumber}" Width="130"/>
 
-                    <DataGridTextColumn Header="العميل"
+                        <DataGridTextColumn Header="العميل"
                         Binding="{Binding CustomerName}" Width="*"/>
 
-                    <DataGridTextColumn Header="التاريخ"
+                        <DataGridTextColumn Header="التاريخ"
                         Binding="{Binding OrderDate, StringFormat='dd/MM/yyyy'}"
                         Width="100"/>
 
-                    <DataGridTextColumn Header="الاستحقاق"
+                        <DataGridTextColumn Header="الاستحقاق"
                         Binding="{Binding DueDate, StringFormat='dd/MM/yyyy'}"
                         Width="100"/>
 
-                    <DataGridTextColumn Header="الإجمالي"
+                        <DataGridTextColumn Header="الإجمالي"
                         Binding="{Binding TotalAmount, StringFormat='{}{0:N0} ر.ي'}"
                         Width="120"/>
 
-                    <DataGridTextColumn Header="المحصّل"
+                        <DataGridTextColumn Header="المحصّل"
                         Binding="{Binding PaidAmount, StringFormat='{}{0:N0} ر.ي'}"
                         Width="120"/>
 
-                    <DataGridTextColumn Header="المتبقي"
+                        <DataGridTextColumn Header="المتبقي"
                         Binding="{Binding RemainingAmount, StringFormat='{}{0:N0} ر.ي'}"
                         Width="120"/>
 
-                    <DataGridTextColumn Header="الدفع"
+                        <DataGridTextColumn Header="الدفع"
                         Binding="{Binding PaymentType}" Width="80"/>
 
-                    <!-- حالة الدفع ملونة -->
-                    <DataGridTemplateColumn Header="الحالة" Width="100">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Border CornerRadius="6" Padding="8,3"
+                        <!-- حالة الدفع ملونة -->
+                        <DataGridTemplateColumn Header="الحالة" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="6" Padding="8,3"
                                         HorizontalAlignment="Center"
                                         Margin="4,6">
-                                    <Border.Background>
-                                        <SolidColorBrush
+                                        <Border.Background>
+                                            <SolidColorBrush
                                             Color="{Binding PaymentStatusColor}"
                                             Opacity="0.15"/>
-                                    </Border.Background>
-                                    <TextBlock
+                                        </Border.Background>
+                                        <TextBlock
                                         Text="{Binding PaymentStatus}"
                                         FontSize="11" FontWeight="SemiBold"
                                         Foreground="{Binding PaymentStatusColor}"
                                         HorizontalAlignment="Center"/>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-                    <!-- أيقونة الرهن -->
-                    <DataGridTemplateColumn Header="رهن" Width="50">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock
+                        <!-- أيقونة الرهن -->
+                        <DataGridTemplateColumn Header="رهن" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock
                                     Text="🔒"
                                     FontSize="14"
                                     HorizontalAlignment="Center"
                                     Visibility="{Binding HasPledge,
                                         Converter={StaticResource BoolToVisibility}}"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-                    <!-- أيقونة متأخر -->
-                    <DataGridTemplateColumn Header="" Width="40">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock
+                        <!-- أيقونة متأخر -->
+                        <DataGridTemplateColumn Header="" Width="40">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock
                                     Text="⚠️"
                                     FontSize="14"
                                     HorizontalAlignment="Center"
                                     ToolTip="طلب متأخر عن السداد"
                                     Visibility="{Binding IsOverdue,
                                         Converter={StaticResource BoolToVisibility}}"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
             </Border>
 
             <!-- لوحة تسجيل دفعة -->
@@ -380,7 +473,7 @@
                         Converter={StaticResource BoolToVisibility}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="💳 تسجيل دفعة"
+                        <TextBlock Text=" تسجيل دفعة"
                                    FontSize="16" FontWeight="Bold"
                                    Foreground="{StaticResource ErpBrushNavSidebar}"
                                    FontFamily="Segoe UI" Margin="0,0,0,4"/>

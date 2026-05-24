@@ -1,13 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using BlockFactory.Desktop.ViewModels.Orders;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using BlockFactory.Core.DTOs.Customers;
+using BlockFactory.Desktop.ViewModels.Orders;
 
+namespace BlockFactory.Desktop.Views.Orders
+{
+    public partial class NewOrderView : UserControl
+    {
+        private readonly NewOrderViewModel _viewModel;
+
+        public NewOrderView()
+        {
+            InitializeComponent();
+            _viewModel = App.GetService<NewOrderViewModel>();
+            DataContext = _viewModel;
+
+            _viewModel.PrintRequested = () =>
+            {
+                var result = MessageBox.Show(
+                    "هل تريد طباعة الفاتورة؟",
+                    "طباعة",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question,
+                    MessageBoxResult.Yes,
+                    MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading);
+
+                return Task.FromResult(result == MessageBoxResult.Yes);
+            };
+        }
+
+        private async void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.LoadDataCommand.ExecuteAsync(null);
+        }
+
+        // ✅ الإصلاح الجوهري — نتجاوز binding تماماً
+        private void CustomerListBox_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListBox lb &&
+                lb.SelectedItem is CustomerLookupDto customer)
+            {
+                _viewModel.SelectedCustomer = customer;
+            }
+        }
+    }
+}
+/*
 namespace BlockFactory.Desktop.Views.Orders
 {
     public partial class NewOrderView : UserControl
@@ -27,4 +67,5 @@ namespace BlockFactory.Desktop.Views.Orders
             await _viewModel.LoadDataCommand.ExecuteAsync(null);
         }
     }
-}
+}*/
+

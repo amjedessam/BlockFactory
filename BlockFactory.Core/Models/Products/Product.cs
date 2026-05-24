@@ -24,6 +24,7 @@ namespace BlockFactory.Core.Models.Products
 
         public bool IsActive { get; set; } = true;
 
+
         // FK
         public int ProductTypeId { get; set; }
         public ProductType ProductType { get; set; } = null!;

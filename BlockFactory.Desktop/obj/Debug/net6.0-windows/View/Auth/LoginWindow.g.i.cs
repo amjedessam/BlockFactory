@@ -68,7 +68,7 @@ namespace BlockFactory.Desktop {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/BlockFactory.Desktop;component/view/auth/loginwindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/BlockFactory.Desktop;V1.0.0.0;component/view/auth/loginwindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\View\Auth\LoginWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

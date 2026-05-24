@@ -4,13 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:BlockFactory.Desktop.Converters"
     FlowDirection="RightToLeft"
-    Background="{StaticResource ErpBrushPageBg}"
+    Background="#F0F2F5"
     Loaded="UserControl_Loaded">
 
     <UserControl.Resources>
 
         <Style x:Key="SectionCard" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource ErpBrushCard}"/>
+            <Setter Property="Background" Value="White"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="Margin" Value="0,0,0,14"/>
@@ -25,7 +25,7 @@
         <Style x:Key="SectionTitle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="{StaticResource ErpBrushNavSidebar}"/>
+            <Setter Property="Foreground" Value="#1E3A5F"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Margin" Value="0,0,0,14"/>
         </Style>
@@ -33,30 +33,39 @@
         <Style x:Key="FieldLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{StaticResource ErpBrushFieldLabel}"/>
+            <Setter Property="Foreground" Value="#555"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Margin" Value="0,0,0,5"/>
         </Style>
 
-        <Style x:Key="InputBox" TargetType="TextBox" BasedOn="{StaticResource ErpFormTextBox}">
+        <Style x:Key="InputBox" TargetType="TextBox">
             <Setter Property="Height" Value="38"/>
-            <Setter Property="MinHeight" Value="38"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#DDE1E7"/>
             <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Background" Value="White"/>
         </Style>
 
-        <Style x:Key="OrderCombo" TargetType="ComboBox" BasedOn="{StaticResource ErpFormComboBox}">
+        <Style x:Key="ActionBtn" TargetType="Button">
             <Setter Property="Height" Value="38"/>
-        </Style>
-
-        <Style x:Key="ActionBtn" TargetType="Button" BasedOn="{StaticResource ErpPrimaryButton}">
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="MinHeight" Value="38"/>
             <Setter Property="Padding" Value="16,0"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
+
+        <!-- ستايل RadioButton لأزرار طريقة الدفع -->
+        <Style x:Key="PaymentRadioBtn" TargetType="RadioButton">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,16,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid>
@@ -78,18 +87,16 @@
                 <!-- ─── بيانات العميل ─── -->
                 <Border Style="{StaticResource SectionCard}">
                     <StackPanel>
-                        <TextBlock Text="👤 بيانات العميل"
+                        <TextBlock Text=" بيانات العميل"
                                    Style="{StaticResource SectionTitle}"/>
 
                         <TextBlock Text="ابحث عن العميل"
                                    Style="{StaticResource FieldLabel}"/>
 
-                        <!-- حقل البحث مع Dropdown -->
+                        <!-- حقل البحث مع Popup -->
                         <Grid>
-                                <TextBox
+                            <TextBox
                                 Style="{StaticResource InputBox}"
-                                TabIndex="1"
-                                ToolTip="ابحث بجزء من الاسم ثم اضغط على العميل من القائمة. عند الحفظ يُختار تلقائياً إن وُجد عميل واحد فقط يطابق البحث."
                                 Text="{Binding CustomerSearch,
                                     UpdateSourceTrigger=PropertyChanged}"
                                 x:Name="CustomerSearchBox"/>
@@ -97,15 +104,15 @@
                             <!-- نتائج البحث -->
                             <Popup
                                 IsOpen="{Binding CustomerResults.Count,
-                                    Mode=OneWay,
-                                    Converter={StaticResource CountToBool}}"
+                                    Converter={StaticResource CountToBool},
+                                    Mode=OneWay}"
                                 PlacementTarget="{Binding ElementName=CustomerSearchBox}"
                                 Placement="Bottom"
                                 Width="{Binding ActualWidth,
                                     ElementName=CustomerSearchBox}"
                                 StaysOpen="False">
-                                <Border Background="{StaticResource ErpBrushCard}"
-                                        BorderBrush="{StaticResource ErpBrushBorderInput}"
+                                <Border Background="White"
+                                        BorderBrush="#DDE1E7"
                                         BorderThickness="1"
                                         CornerRadius="8">
                                     <Border.Effect>
@@ -115,11 +122,12 @@
                                             ShadowDepth="3"/>
                                     </Border.Effect>
                                     <ListBox
-                                        ItemsSource="{Binding CustomerResults}"
-                                        SelectedItem="{Binding SelectedCustomer}"
-                                        BorderThickness="0"
-                                        MaxHeight="200"
-                                        FontFamily="Segoe UI">
+    x:Name="CustomerListBox"
+    ItemsSource="{Binding CustomerResults}"
+    BorderThickness="0"
+    MaxHeight="200"
+    FontFamily="Segoe UI"
+    MouseLeftButtonUp="CustomerListBox_MouseLeftButtonUp">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
                                                 <StackPanel Margin="10,6">
@@ -127,13 +135,12 @@
                                                         Text="{Binding FullName}"
                                                         FontSize="13"
                                                         FontWeight="SemiBold"
-                                                        Foreground="{StaticResource ErpBrushTextPrimary}"/>
-                                                    <StackPanel
-                                                        Orientation="Horizontal">
+                                                        Foreground="#2C3E50"/>
+                                                    <StackPanel Orientation="Horizontal">
                                                         <TextBlock
                                                             Text="{Binding Phone}"
                                                             FontSize="11"
-                                                            Foreground="{StaticResource ErpBrushTextSecondary}"
+                                                            Foreground="#7F8C8D"
                                                             Margin="0,0,10,0"/>
                                                         <TextBlock
                                                             FontSize="11"
@@ -163,7 +170,7 @@
                             Visibility="{Binding HasSelectedCustomer,
                                 Converter={StaticResource BoolToVisibility}}"/>
 
-                        <!-- تاريخ الطلب -->
+                        <!-- تاريخ الطلب + تاريخ الاستحقاق -->
                         <Grid Margin="0,12,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -175,12 +182,10 @@
                                            Style="{StaticResource FieldLabel}"/>
                                 <DatePicker
                                     SelectedDate="{Binding OrderDate}"
-                                    TabIndex="2"
                                     Height="38"
                                     FontFamily="Segoe UI"/>
                             </StackPanel>
 
-                            <!-- تاريخ الاستحقاق -->
                             <StackPanel Grid.Column="1"
                                         Visibility="{Binding ShowDueDate,
                                             Converter={StaticResource BoolToVisibility}}">
@@ -188,7 +193,6 @@
                                            Style="{StaticResource FieldLabel}"/>
                                 <DatePicker
                                     SelectedDate="{Binding DueDate}"
-                                    TabIndex="3"
                                     Height="38"
                                     FontFamily="Segoe UI"/>
                             </StackPanel>
@@ -199,32 +203,57 @@
                 <!-- ─── طريقة الدفع ─── -->
                 <Border Style="{StaticResource SectionCard}">
                     <StackPanel>
-                        <TextBlock Text="💳 طريقة الدفع"
+                        <TextBlock Text=" طريقة الدفع"
                                    Style="{StaticResource SectionTitle}"/>
 
-                        <!-- أزرار طريقة الدفع -->
-                        <ItemsControl ItemsSource="{Binding PaymentTypes}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Rows="1"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <RadioButton
-                                        Content="{Binding Name}"
-                                        GroupName="PaymentType"
-                                        Margin="0,0,8,0"
-                                        FontFamily="Segoe UI"
-                                        FontSize="13"
-                                        IsChecked="{Binding IsSelected,
-                                            Mode=OneWay}"
-                                        Command="{Binding DataContext.SelectPaymentTypeCommand,
-                                            RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding Value}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <!--
+                            ✅ الإصلاح الجوهري:
+                            كل RadioButton يربط مباشرة على SelectedPaymentType
+                            عبر EnumBoolConverter بدلاً من IsSelected/SelectPaymentTypeCommand
+                            اللذين لا وجود لهما.
+                        -->
+                        <WrapPanel Margin="0,0,0,4">
+                            <RadioButton
+                                Content="نقد"
+                                GroupName="Payment"
+                                Style="{StaticResource PaymentRadioBtn}"
+                                IsChecked="{Binding SelectedPaymentType,
+                                    Converter={StaticResource EnumBoolConverter},
+                                    ConverterParameter='Cash'}"/>
+
+                            <RadioButton
+                                Content="تحويل"
+                                GroupName="Payment"
+                                Style="{StaticResource PaymentRadioBtn}"
+                                IsChecked="{Binding SelectedPaymentType,
+                                    Converter={StaticResource EnumBoolConverter},
+                                    ConverterParameter='Electronic'}"/>
+
+                            <RadioButton
+                                Content="آجل"
+                                GroupName="Payment"
+                                Style="{StaticResource PaymentRadioBtn}"
+                                IsChecked="{Binding SelectedPaymentType,
+                                    Converter={StaticResource EnumBoolConverter},
+                                    ConverterParameter='Credit'}"/>
+
+                            <RadioButton
+                                Content="رهن"
+                                GroupName="Payment"
+                                Style="{StaticResource PaymentRadioBtn}"
+                                IsChecked="{Binding SelectedPaymentType,
+                                    Converter={StaticResource EnumBoolConverter},
+                                    ConverterParameter='Pledge'}"/>
+
+                            <RadioButton
+                                Content="مختلط"
+                                GroupName="Payment"
+                                Style="{StaticResource PaymentRadioBtn}"
+                                Margin="0"
+                                IsChecked="{Binding SelectedPaymentType,
+                                    Converter={StaticResource EnumBoolConverter},
+                                    ConverterParameter='Mixed'}"/>
+                        </WrapPanel>
 
                         <!-- تفاصيل التحويل الإلكتروني -->
                         <Grid Margin="0,12,0,0"
@@ -239,7 +268,6 @@
                                 <TextBlock Text="المحفظة"
                                            Style="{StaticResource FieldLabel}"/>
                                 <ComboBox
-                                    Style="{StaticResource OrderCombo}"
                                     ItemsSource="{Binding WalletOptions}"
                                     SelectedItem="{Binding SelectedWallet}"
                                     Height="38"
@@ -257,7 +285,7 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- الدفعة الأولى للآجل/المختلط -->
+                        <!-- الدفعة الأولى للآجل / الرهن / المختلط -->
                         <StackPanel
                             Margin="0,12,0,0"
                             Visibility="{Binding ShowInitialPayment,
@@ -269,8 +297,7 @@
                                 Width="200"
                                 HorizontalAlignment="Right"
                                 Text="{Binding InitialPayment,
-                                    UpdateSourceTrigger=PropertyChanged,
-                                    StringFormat='{}{0:N0}'}"/>
+        UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -280,7 +307,7 @@
                         Visibility="{Binding IsPledge,
                             Converter={StaticResource BoolToVisibility}}">
                     <StackPanel>
-                        <TextBlock Text="🔒 بيانات الرهن"
+                        <TextBlock Text=" بيانات الرهن"
                                    Style="{StaticResource SectionTitle}"/>
 
                         <Grid>
@@ -293,7 +320,6 @@
                                 <TextBlock Text="نوع الرهن"
                                            Style="{StaticResource FieldLabel}"/>
                                 <ComboBox
-                                    Style="{StaticResource OrderCombo}"
                                     ItemsSource="{Binding PledgeTypes}"
                                     SelectedValuePath="Value"
                                     DisplayMemberPath="Name"
@@ -325,13 +351,26 @@
                             AcceptsReturn="True"
                             VerticalContentAlignment="Top"
                             Padding="10"/>
+
+                        <TextBlock Text="ملاحظات الرهن"
+                                   Style="{StaticResource FieldLabel}"
+                                   Margin="0,10,0,5"/>
+                        <TextBox
+                            Style="{StaticResource InputBox}"
+                            Text="{Binding PledgeNotes,
+                                UpdateSourceTrigger=PropertyChanged}"
+                            Height="50"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            VerticalContentAlignment="Top"
+                            Padding="10"/>
                     </StackPanel>
                 </Border>
 
                 <!-- ─── إضافة منتجات ─── -->
                 <Border Style="{StaticResource SectionCard}">
                     <StackPanel>
-                        <TextBlock Text="🧱 المنتجات"
+                        <TextBlock Text=" المنتجات"
                                    Style="{StaticResource SectionTitle}"/>
 
                         <!-- صف إضافة منتج -->
@@ -348,7 +387,6 @@
                                 <TextBlock Text="المنتج"
                                            Style="{StaticResource FieldLabel}"/>
                                 <ComboBox
-                                    Style="{StaticResource OrderCombo}"
                                     ItemsSource="{Binding AvailableProducts}"
                                     SelectedItem="{Binding SelectedProduct}"
                                     DisplayMemberPath="Name"
@@ -376,9 +414,7 @@
                                 <TextBox
                                     Style="{StaticResource InputBox}"
                                     Text="{Binding NewItemPrice,
-                                        UpdateSourceTrigger=PropertyChanged}"
-                                    IsReadOnly="{Binding CanChangePrice,
-                                        Converter={StaticResource InverseBool}}">
+                                        UpdateSourceTrigger=PropertyChanged}">
                                     <TextBox.Background>
                                         <SolidColorBrush
                                             Color="{Binding IsPriceValid,
@@ -391,7 +427,6 @@
                             <!-- زر الإضافة -->
                             <Button Grid.Column="3"
                                     Style="{StaticResource ActionBtn}"
-                                    TabIndex="10"
                                     Content="➕ إضافة"
                                     Command="{Binding AddItemCommand}"
                                     Background="#E67E22"
@@ -405,9 +440,29 @@
                             AutoGenerateColumns="False"
                             IsReadOnly="False"
                             CanUserAddRows="False"
+                            GridLinesVisibility="Horizontal"
+                            HorizontalGridLinesBrush="#F0F2F5"
+                            HeadersVisibility="Column"
+                            BorderThickness="1"
+                            BorderBrush="#F0F2F5"
+                            Background="White"
+                            RowBackground="White"
+                            AlternatingRowBackground="#FAFBFC"
                             Margin="0,12,0,0"
                             MinHeight="120"
+                            FontFamily="Segoe UI"
+                            FontSize="13"
                             RowHeight="40">
+
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="#F8F9FA"/>
+                                    <Setter Property="Foreground" Value="#7F8C8D"/>
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="Padding" Value="10,8"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn
@@ -428,23 +483,12 @@
                                         UpdateSourceTrigger=PropertyChanged}"
                                     Width="80"/>
 
-                                <DataGridTemplateColumn Header="السعر" Width="100">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBox
-                                                Text="{Binding UnitPrice,
-                                                    UpdateSourceTrigger=PropertyChanged,
-                                                    StringFormat=N0}"
-                                                BorderThickness="0"
-                                                Padding="4,0"
-                                                VerticalContentAlignment="Center"
-                                                Background="Transparent"
-                                                IsReadOnly="{Binding DataContext.CanChangePrice,
-                                                    RelativeSource={RelativeSource AncestorType=UserControl},
-                                                    Converter={StaticResource InverseBool}}"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="السعر"
+                                    Binding="{Binding UnitPrice,
+                                        UpdateSourceTrigger=PropertyChanged,
+                                        StringFormat='{}{0:N0}'}"
+                                    Width="100"/>
 
                                 <DataGridTextColumn
                                     Header="الإجمالي"
@@ -534,7 +578,7 @@
                             FontFamily="Segoe UI"
                             FontSize="13"
                             Padding="10"
-                            BorderBrush="{StaticResource ErpBrushBorderInput}"
+                            BorderBrush="#DDE1E7"
                             BorderThickness="1.5"/>
                     </StackPanel>
                 </Border>
@@ -553,16 +597,16 @@
 
             <!-- بطاقة الإجماليات -->
             <Border Grid.Row="0"
-                    Background="{StaticResource ErpBrushCard}"
-                    CornerRadius="12"
-                    Padding="20">
+        Background="White"
+        CornerRadius="12"
+        Padding="20">
                 <Border.Effect>
                     <DropShadowEffect Color="#000" Opacity="0.05"
-                                      BlurRadius="10" ShadowDepth="2"/>
+                          BlurRadius="10" ShadowDepth="2"/>
                 </Border.Effect>
                 <StackPanel>
-                    <TextBlock Text="📋 ملخص الطلب"
-                               Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="ملخص الطلب"
+                   Style="{StaticResource SectionTitle}"/>
 
                     <!-- عميل -->
                     <Grid Margin="0,0,0,8">
@@ -570,131 +614,104 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
-                                   Text="العميل:"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"
-                                   FontSize="12"
-                                   Foreground="{StaticResource ErpBrushTextSecondary}"
-                                   FontFamily="Segoe UI"/>
+                        <TextBlock Grid.Column="0" Text="العميل:"
+                       FontSize="12" Foreground="#7F8C8D"
+                       FontFamily="Segoe UI" Margin="0,0,8,0"/>
                         <TextBlock Grid.Column="1"
-                                   VerticalAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   Text="{Binding SelectedCustomer.FullName,
-                                       TargetNullValue='—',
-                                       FallbackValue='—'}"
-                                   HorizontalAlignment="Left"
-                                   FontSize="13"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource ErpBrushTextPrimary}"
-                                   FontFamily="Segoe UI"/>
+                       Text="{Binding SelectedCustomer.FullName, FallbackValue='---'}"
+                       FontSize="13" FontWeight="SemiBold"
+                       Foreground="#2C3E50" FontFamily="Segoe UI"/>
                     </Grid>
 
-                    <Separator Background="{StaticResource ErpBrushPageBg}" Margin="0,8"/>
+                    <!-- نوع الدفع -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="طريقة الدفع:"
+                       FontSize="12" Foreground="#7F8C8D"
+                       FontFamily="Segoe UI" Margin="0,0,8,0"/>
+                        <TextBlock Grid.Column="1"
+                       Text="{Binding SelectedPaymentType}"
+                       FontSize="13" FontWeight="SemiBold"
+                       Foreground="#1E3A5F" FontFamily="Segoe UI"/>
+                    </Grid>
 
-                    <!-- الحسابات -->
+                    <Separator Background="#F0F2F5" Margin="0,8"/>
+
+                    <!-- المجموع الفرعي -->
                     <Grid Margin="0,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
-                                   Text="المجموع الفرعي:"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"
-                                   FontSize="13"
-                                   Foreground="#555"
-                                   FontFamily="Segoe UI"/>
-                        <TextBlock Grid.Column="1"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
-                                   FontSize="13"
-                                   Foreground="{StaticResource ErpBrushTextPrimary}"
-                                   FontFamily="Segoe UI">
-                            <Run Text="{Binding SubTotal,
-                                StringFormat='{}{0:N0}'}"/>
-                            <Run Text=" ر.ي"/>
+                        <TextBlock Grid.Column="0" Text="المجموع الفرعي:"
+                       FontSize="13" Foreground="#555"
+                       FontFamily="Segoe UI" Margin="0,0,8,0"/>
+                        <TextBlock Grid.Column="1" FontSize="13"
+                       Foreground="#2C3E50" FontFamily="Segoe UI">
+                <Run Text="{Binding SubTotal, StringFormat='{}{0:N0}'}"/>
+                <Run Text=" ر.ي"/>
                         </TextBlock>
                     </Grid>
 
+                    <!-- الخصم (يظهر فقط إذا وجد) -->
                     <Grid Margin="0,4"
-                          Visibility="{Binding Discount,
-                              Converter={StaticResource DecimalToBool}}">
+              Visibility="{Binding Discount, Converter={StaticResource DecimalToBool}}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
-                                   Text="الخصم:"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"
-                                   FontSize="13"
-                                   Foreground="#E74C3C"
-                                   FontFamily="Segoe UI"/>
-                        <TextBlock Grid.Column="1"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
-                                   FontSize="13"
-                                   Foreground="#E74C3C"
-                                   FontFamily="Segoe UI">
-                            <Run Text="-"/>
-                            <Run Text="{Binding Discount,
-                                StringFormat='{}{0:N0}'}"/>
-                            <Run Text=" ر.ي"/>
+                        <TextBlock Grid.Column="0" Text="الخصم:"
+                       FontSize="13" Foreground="#E74C3C"
+                       FontFamily="Segoe UI" Margin="0,0,8,0"/>
+                        <TextBlock Grid.Column="1" FontSize="13"
+                       Foreground="#E74C3C" FontFamily="Segoe UI">
+                <Run Text="-"/>
+                <Run Text="{Binding Discount, StringFormat='{}{0:N0}'}"/>
+                <Run Text=" ر.ي"/>
                         </TextBlock>
                     </Grid>
 
-                    <!-- خصم -->
+                    <!-- إدخال الخصم -->
                     <Grid Margin="0,4,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
-                                   Text="خصم (ر.ي):"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"
-                                   FontSize="12"
-                                   Foreground="{StaticResource ErpBrushTextSecondary}"
-                                   FontFamily="Segoe UI"/>
+                        <TextBlock Grid.Column="0" Text="خصم (ر.ي):"
+                       FontSize="12" Foreground="#7F8C8D"
+                       VerticalAlignment="Center"
+                       FontFamily="Segoe UI" Margin="0,0,8,0"/>
                         <TextBox Grid.Column="1"
-                                 HorizontalAlignment="Left"
-                                 Width="100"
-                                 Style="{StaticResource InputBox}"
-                                 TabIndex="20"
-                                 Text="{Binding Discount,
-                                     UpdateSourceTrigger=PropertyChanged}"
-                                 IsReadOnly="{Binding CanChangePrice,
-                                     Converter={StaticResource InverseBool}}"/>
+                     Width="100" Height="32"
+                     HorizontalAlignment="Left"
+                     FontSize="13" Padding="8,0"
+                     VerticalContentAlignment="Center"
+                     BorderBrush="#DDE1E7" BorderThickness="1.5"
+                     FontFamily="Segoe UI"
+                     Text="{Binding Discount, UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
 
+                    <!-- التوصيل -->
                     <Grid Margin="0,4"
-                          Visibility="{Binding IsDelivery,
-                              Converter={StaticResource BoolToVisibility}}">
+              Visibility="{Binding IsDelivery, Converter={StaticResource BoolToVisibility}}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
-                                   Text="التوصيل:"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"
-                                   FontSize="13"
-                                   Foreground="#555"
-                                   FontFamily="Segoe UI"/>
-                        <TextBlock Grid.Column="1"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
-                                   FontSize="13"
-                                   Foreground="{StaticResource ErpBrushTextPrimary}"
-                                   FontFamily="Segoe UI">
-                            <Run Text="{Binding DeliveryCost,
-                                StringFormat='{}{0:N0}'}"/>
-                            <Run Text=" ر.ي"/>
+                        <TextBlock Grid.Column="0" Text="التوصيل:"
+                       FontSize="13" Foreground="#555"
+                       FontFamily="Segoe UI" Margin="0,0,8,0"/>
+                        <TextBlock Grid.Column="1" FontSize="13"
+                       Foreground="#2C3E50" FontFamily="Segoe UI">
+                <Run Text="{Binding DeliveryCost, StringFormat='{}{0:N0}'}"/>
+                <Run Text=" ر.ي"/>
                         </TextBlock>
                     </Grid>
 
-                    <Separator Background="{StaticResource ErpBrushPageBg}" Margin="0,10"/>
+                    <Separator Background="#F0F2F5" Margin="0,10"/>
 
                     <!-- الإجمالي -->
                     <Grid Margin="0,6">
@@ -702,118 +719,91 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
-                                   Text="الإجمالي:"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"
-                                   FontSize="16"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource ErpBrushNavSidebar}"
-                                   FontFamily="Segoe UI"/>
-                        <TextBlock Grid.Column="1"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="#E67E22"
-                                   FontFamily="Segoe UI">
-                            <Run Text="{Binding TotalAmount,
-                                StringFormat='{}{0:N0}'}"/>
-                            <Run Text=" ر.ي"
-                                 FontSize="13"
-                                 Foreground="{StaticResource ErpBrushTextSecondary}"/>
+                        <TextBlock Grid.Column="0" Text="الإجمالي:"
+                       FontSize="16" FontWeight="Bold"
+                       Foreground="#1E3A5F" FontFamily="Segoe UI"
+                       Margin="0,0,8,0"/>
+                        <TextBlock Grid.Column="1" FontSize="18"
+                       FontWeight="Bold" Foreground="#E67E22"
+                       FontFamily="Segoe UI">
+                <Run Text="{Binding TotalAmount, StringFormat='{}{0:N0}'}"/>
+                <Run Text=" ر.ي" FontSize="13" Foreground="#7F8C8D"/>
                         </TextBlock>
                     </Grid>
 
                     <!-- المتبقي -->
                     <Grid Margin="0,4"
-                          Visibility="{Binding RemainingAmount,
-                              Converter={StaticResource DecimalToBool}}">
+              Visibility="{Binding RemainingAmount, Converter={StaticResource DecimalToBool}}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
-                                   Text="المتبقي:"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Foreground="#E74C3C"
-                                   FontFamily="Segoe UI"/>
-                        <TextBlock Grid.Column="1"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="#E74C3C"
-                                   FontFamily="Segoe UI">
-                            <Run Text="{Binding RemainingAmount,
-                                StringFormat='{}{0:N0}'}"/>
-                            <Run Text=" ر.ي"/>
+                        <TextBlock Grid.Column="0" Text="المتبقي:"
+                       FontSize="14" FontWeight="SemiBold"
+                       Foreground="#E74C3C" FontFamily="Segoe UI"
+                       Margin="0,0,8,0"/>
+                        <TextBlock Grid.Column="1" FontSize="14"
+                       FontWeight="Bold" Foreground="#E74C3C"
+                       FontFamily="Segoe UI">
+                <Run Text="{Binding RemainingAmount, StringFormat='{}{0:N0}'}"/>
+                <Run Text=" ر.ي"/>
                         </TextBlock>
                     </Grid>
 
-                    <!-- عدد العناصر -->
-                    <Border Background="#F8F9FA"
-                            CornerRadius="8"
-                            Padding="12,8"
-                            Margin="0,12,0,0">
-                        <TextBlock FontSize="12"
-                                   Foreground="#555"
-                                   FontFamily="Segoe UI">
-                            <Run Text="عدد المنتجات:"/>
-                            <Run Text="{Binding OrderItems.Count,
-                                       Mode=OneWay}"
-                                 FontWeight="Bold"/>
+                    <!-- عدد المنتجات -->
+                    <Border Background="#F8F9FA" CornerRadius="8"
+                Padding="12,8" Margin="0,12,0,0">
+                        <TextBlock FontSize="12" Foreground="#555" FontFamily="Segoe UI">
+                <Run Text="عدد المنتجات:"/>
+                <Run Text="{Binding OrderItems.Count, Mode=OneWay}" FontWeight="Bold"/>
                         </TextBlock>
                     </Border>
 
-                    <!-- رسائل الحالة -->
-                    <Border Background="#FDEDEC"
-                            CornerRadius="8"
-                            Padding="12,8"
-                            Margin="0,10,0,0"
-                            Visibility="{Binding HasError,
-                                Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock
-                            Text="{Binding ErrorMessage}"
-                            FontSize="12"
-                            Foreground="#E74C3C"
-                            FontFamily="Segoe UI"
-                            TextWrapping="Wrap"/>
+                    <!-- رسالة الخطأ -->
+                    <Border Background="#FDEDEC" CornerRadius="8"
+                Padding="12,8" Margin="0,10,0,0"
+                Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding ErrorMessage}"
+                       FontSize="12" Foreground="#E74C3C"
+                       FontFamily="Segoe UI" TextWrapping="Wrap"/>
                     </Border>
 
-                    <Border Background="#EAFAF1"
-                            CornerRadius="8"
-                            Padding="12,8"
-                            Margin="0,10,0,0"
-                            Visibility="{Binding SuccessMessage,
-                                Converter={StaticResource StringToVisibility}}">
-                        <TextBlock
-                            Text="{Binding SuccessMessage}"
-                            FontSize="12"
-                            Foreground="#27AE60"
-                            FontFamily="Segoe UI"
-                            TextWrapping="Wrap"/>
+                    <!-- رسالة النجاح -->
+                    <Border Background="#EAFAF1" CornerRadius="8"
+                Padding="12,8" Margin="0,10,0,0"
+                Visibility="{Binding SuccessMessage, Converter={StaticResource StringToVisibility}}">
+                        <TextBlock Text="{Binding SuccessMessage}"
+                       FontSize="12" Foreground="#27AE60"
+                       FontFamily="Segoe UI" TextWrapping="Wrap"/>
                     </Border>
                 </StackPanel>
             </Border>
-
             <!-- أزرار الحفظ والمسح -->
             <StackPanel Grid.Row="1" Margin="0,12,0,0">
                 <Button
                     Content="💾 حفظ الطلب وإصدار الفاتورة"
                     Command="{Binding SaveOrderCommand}"
-                    Style="{StaticResource ErpPrimaryDarkButton}"
-                    TabIndex="30"
+                    Height="48"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    FontFamily="Segoe UI"
+                    Background="#1E3A5F"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Cursor="Hand"
                     Margin="0,0,0,8"/>
 
                 <Button
                     Content="🗑 مسح النموذج"
                     Command="{Binding ClearFormCommand}"
-                    Style="{StaticResource ErpSecondaryButton}"
-                    TabIndex="31"/>
+                    Height="38"
+                    FontSize="13"
+                    FontFamily="Segoe UI"
+                    Background="#F0F2F5"
+                    Foreground="#7F8C8D"
+                    BorderThickness="1"
+                    BorderBrush="#DDE1E7"
+                    Cursor="Hand"/>
             </StackPanel>
         </Grid>
     </Grid>

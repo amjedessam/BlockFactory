@@ -30,6 +30,7 @@ namespace BlockFactory.Desktop.ViewModels.Dashboard
             _refreshTimer.Tick += async (s, e)
                 => await LoadDataAsync();
             _refreshTimer.Start();
+            _ = LoadDataAsync();
         }
 
         // ─── Properties — إحصائيات ──────────────────
@@ -113,7 +114,7 @@ namespace BlockFactory.Desktop.ViewModels.Dashboard
 
         // ─── بيانات المستخدم ────────────────────────
         public string WelcomeMessage =>
-            $"مرحباً، {CurrentSession.Instance.FullName} 👋";
+            $"مرحباً، {CurrentSession.Instance.FullName} ";
 
         public string TodayDate => DateTime.Now.ToString(
             "dddd، d MMMM yyyy",

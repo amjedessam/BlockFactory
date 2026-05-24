@@ -14,17 +14,170 @@
                 ConverterParameter='320|0'}"/>
         </Grid.ColumnDefinitions>
 
-        <!-- ══ القائمة ══ -->
+        <!-- ══ القائمة والمحتوى الأساسي ══ -->
         <Grid Grid.Column="0" Margin="0,0,12,0">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Border Grid.Row="0" Background="{StaticResource ErpBrushCard}"
+            <!-- ══════════════════════════════════════════ -->
+            <!-- 1. قسم Mobile API — جديد                  -->
+            <!-- ══════════════════════════════════════════ -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource ErpBrushCard}"
+                    CornerRadius="12" Padding="16,14"
+                    Margin="0,0,0,12">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000" Opacity="0.05"
+                                      BlurRadius="8" ShadowDepth="1"/>
+                </Border.Effect>
+                <StackPanel>
+
+                    <!-- عنوان القسم -->
+                    <TextBlock Text=" واجهة الهاتف (Mobile API)"
+                               FontSize="15" FontWeight="Bold"
+                               Foreground="{StaticResource ErpBrushNavSidebar}"
+                               FontFamily="Segoe UI"
+                               Margin="0,0,0,12"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- يسار: الحالة والرابط -->
+                        <StackPanel Grid.Column="0">
+
+                            <!-- حالة API -->
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,0,0,8">
+                                <TextBlock Text="الحالة: "
+                                           FontSize="13"
+                                           FontFamily="Segoe UI"
+                                           Foreground="{StaticResource ErpBrushTextSecondary}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock
+                                    Text="{Binding ApiStatusText}"
+                                    FontSize="13" FontWeight="Bold"
+                                    FontFamily="Segoe UI"
+                                    VerticalAlignment="Center">
+                                    <TextBlock.Foreground>
+                                        <SolidColorBrush
+                                            Color="{Binding IsApiRunning,
+                                                Converter={StaticResource BoolToColorConverter},
+                                                ConverterParameter='#27AE60|#E74C3C'}"/>
+                                    </TextBlock.Foreground>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!-- رابط API -->
+                            <StackPanel Orientation="Horizontal"
+                                        Visibility="{Binding IsApiRunning,
+                                            Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="الرابط: "
+                                           FontSize="12"
+                                           FontFamily="Segoe UI"
+                                           Foreground="{StaticResource ErpBrushTextSecondary}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock
+                                    x:Name="ApiUrlText"
+                                    Text="{Binding ApiUrl}"
+                                    FontSize="12" FontWeight="Bold"
+                                    FontFamily="Consolas"
+                                    Foreground="#2980B9"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,8,0"/>
+
+                                <!-- زر نسخ الرابط -->
+                                <Button
+                                    Content="📋 نسخ"
+                                    Click="CopyApiUrl_Click"
+                                    Height="26" Padding="10,0"
+                                    FontSize="11"
+                                    FontFamily="Segoe UI"
+                                    Background="#EBF5FB"
+                                    Foreground="#2980B9"
+                                    BorderThickness="1"
+                                    BorderBrush="#AED6F1"
+                                    Cursor="Hand"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- يمين: زر التشغيل/الإيقاف -->
+                        <Button Grid.Column="1"
+                                Content="{Binding ApiToggleText}"
+                                Command="{Binding ToggleApiCommand}"
+                                Height="40" Padding="16,0"
+                                FontSize="13" FontWeight="Bold"
+                                FontFamily="Segoe UI"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                VerticalAlignment="Center">
+                            <Button.Background>
+                                <SolidColorBrush
+                                    Color="{Binding IsApiRunning,
+                                        Converter={StaticResource BoolToColorConverter},
+                                        ConverterParameter='#E74C3C|#27AE60'}"/>
+                            </Button.Background>
+                            <Button.Foreground>
+                                <SolidColorBrush Color="White"/>
+                            </Button.Foreground>
+                        </Button>
+                    </Grid>
+
+                    <!-- تعليمات للمستخدم -->
+                    <Border Background="#EBF5FB"
+                            CornerRadius="8" Padding="12,10"
+                            Margin="0,12,0,0"
+                            Visibility="{Binding IsApiRunning,
+                                Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
+                            <TextBlock Text="كيفية الوصول من الهاتف:"
+                                       FontSize="12" FontWeight="Bold"
+                                       Foreground="#2980B9"
+                                       FontFamily="Segoe UI"
+                                       Margin="0,0,0,6"/>
+                            <TextBlock FontSize="11"
+                                       Foreground="#555"
+                                       FontFamily="Segoe UI"
+                                       TextWrapping="Wrap"
+                                       LineHeight="18">
+                                <Run Text="1. تأكد أن الهاتف والكمبيوتر على نفس الشبكة (WiFi)"/>
+                                <LineBreak/>
+                                <Run Text="2. افتح المتصفح على الهاتف"/>
+                                <LineBreak/>
+                                <Run Text="3. اكتب الرابط:"/>
+                                <Run Text="{Binding ApiUrl}"
+                                     FontFamily="Consolas"
+                                     FontWeight="Bold"
+                                     Foreground="#2980B9"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- تعليمات عندما يكون API متوقف -->
+                    <Border Background="#F8F9FA"
+                            CornerRadius="8" Padding="12,8"
+                            Margin="0,10,0,0"
+                            Visibility="{Binding IsApiRunning,
+                                Converter={StaticResource InverseBoolToVisibility}}">
+                        <TextBlock Text="اضغط 'تشغيل API' لتفعيل الوصول من الهاتف عبر WiFi"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   FontFamily="Segoe UI"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+
+                </StackPanel>
+            </Border>
+
+            <!-- Header المنتجات -->
+            <Border Grid.Row="1" Background="{StaticResource ErpBrushCard}"
                     CornerRadius="12" Padding="16,12"
                     Margin="0,0,0,12">
                 <Border.Effect>
@@ -33,7 +186,7 @@
                 </Border.Effect>
                 <Grid>
                     <StackPanel>
-                        <TextBlock Text="🧱 المنتجات والأسعار"
+                        <TextBlock Text=" المنتجات والأسعار"
                                    FontSize="16" FontWeight="Bold"
                                    Foreground="{StaticResource ErpBrushNavSidebar}"
                                    FontFamily="Segoe UI"/>
@@ -49,23 +202,11 @@
                                  Foreground="#27AE60"/>
                         </TextBlock>
                     </StackPanel>
-
-                    <Button Content="🔄 تحديث"
-                            Command="{Binding LoadCommand}"
-                            Height="34" Padding="12,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Background="{StaticResource ErpBrushPageBg}"
-                            BorderThickness="1"
-                            BorderBrush="{StaticResource ErpBrushBorderInput}"
-                            FontFamily="Segoe UI"
-                            FontSize="12"
-                            Cursor="Hand"/>
                 </Grid>
             </Border>
 
             <!-- فلتر النوع -->
-            <StackPanel Grid.Row="1"
+            <StackPanel Grid.Row="2"
                         Orientation="Horizontal"
                         Margin="0,0,0,12">
                 <ItemsControl ItemsSource="{Binding TypeFilters}">
@@ -102,7 +243,7 @@
             </StackPanel>
 
             <!-- رسائل -->
-            <Border Grid.Row="2" Padding="12,8" CornerRadius="8"
+            <Border Grid.Row="3" Padding="12,8" CornerRadius="8"
                     Margin="0,0,0,10"
                     Visibility="{Binding HasError,
                         Converter={StaticResource BoolToVisibility}}"
@@ -113,7 +254,7 @@
             </Border>
 
             <!-- DataGrid -->
-            <Border Grid.Row="3" Background="{StaticResource ErpBrushCard}"
+            <Border Grid.Row="4" Background="{StaticResource ErpBrushCard}"
                     CornerRadius="12">
                 <Border.Effect>
                     <DropShadowEffect Color="#000" Opacity="0.05"
@@ -139,42 +280,33 @@
 
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background"
-                                    Value="#F8F9FA"/>
+                            <Setter Property="Background" Value="#F8F9FA"/>
                             <Setter Property="Foreground"
                                     Value="{StaticResource ErpBrushTextSecondary}"/>
                             <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="FontWeight"
-                                    Value="SemiBold"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
                             <Setter Property="Padding" Value="14,10"/>
-                            <Setter Property="BorderThickness"
-                                    Value="0"/>
+                            <Setter Property="BorderThickness" Value="0"/>
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
 
                     <DataGrid.Columns>
-                        <!-- النوع -->
                         <DataGridTextColumn Header="النوع"
                             Binding="{Binding TypeName}" Width="120"/>
 
-                        <!-- الاسم -->
                         <DataGridTextColumn Header="المنتج"
                             Binding="{Binding Name}" Width="*"/>
 
-                        <!-- المقاس -->
                         <DataGridTextColumn Header="المقاس"
                             Binding="{Binding Size}" Width="70"/>
 
-                        <!-- نطاق السعر -->
-                        <DataGridTemplateColumn
-                            Header="نطاق السعر" Width="160">
+                        <DataGridTemplateColumn Header="نطاق السعر" Width="160">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        Margin="14,0"
-                                        FontFamily="Segoe UI"
-                                        FontSize="12">
+                                    <TextBlock VerticalAlignment="Center"
+                                               Margin="14,0"
+                                               FontFamily="Segoe UI"
+                                               FontSize="12">
                                         <Run Text="{Binding PriceMin,
                                             StringFormat='{}{0:N0}'}"/>
                                         <Run Text=" — "/>
@@ -187,40 +319,30 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- السعر الافتراضي -->
                         <DataGridTextColumn Header="الافتراضي"
                             Binding="{Binding DefaultPrice,
                                 StringFormat='{}{0:N0} ر.ي'}"
                             Width="100"/>
 
-                        <!-- المخزون -->
-                        <DataGridTemplateColumn
-                            Header="المخزون" Width="90">
+                        <DataGridTemplateColumn Header="الحد الأدنى" Width="90">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock
-                                        Text="{Binding StockQuantity}"
+                                        Text="{Binding MinThreshold}"
                                         FontWeight="Bold"
                                         FontSize="13"
                                         FontFamily="Segoe UI"
+                                        Foreground="#2980B9"
                                         HorizontalAlignment="Center"
-                                        VerticalAlignment="Center">
-                                        <TextBlock.Foreground>
-                                            <SolidColorBrush Color="{Binding StockQuantity,
-                                                Converter={StaticResource StockColorConverter}}"/>
-                                        </TextBlock.Foreground>
-                                    </TextBlock>
+                                        VerticalAlignment="Center"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- الحالة -->
-                        <DataGridTemplateColumn
-                            Header="الحالة" Width="80">
+                        <DataGridTemplateColumn Header="الحالة" Width="80">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border CornerRadius="6"
-                                            Padding="8,3"
+                                    <Border CornerRadius="6" Padding="8,3"
                                             HorizontalAlignment="Center"
                                             Margin="4,8">
                                         <Border.Background>
@@ -228,11 +350,9 @@
                                                 Converter={StaticResource BoolToColorConverter},
                                                 ConverterParameter='#EAFAF1|#FDEDEC'}"/>
                                         </Border.Background>
-                                        <TextBlock
-                                            FontSize="11"
-                                            FontWeight="SemiBold"
-                                            HorizontalAlignment="Center"
-                                            FontFamily="Segoe UI">
+                                        <TextBlock FontSize="11" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   FontFamily="Segoe UI">
                                             <TextBlock.Text>
                                                 <Binding Path="IsActive"
                                                     Converter="{StaticResource BoolToTextConverter}"
@@ -265,7 +385,6 @@
             </Border.Effect>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <!-- اسم المنتج المحدد -->
                     <Border Background="#EBF5FB" CornerRadius="8"
                             Padding="14,10" Margin="0,0,0,16">
                         <StackPanel>
@@ -278,127 +397,99 @@
                             <TextBlock
                                 Text="{Binding SelectedProduct.TypeName,
                                     FallbackValue=''}"
-                                FontSize="11" Foreground="{StaticResource ErpBrushTextSecondary}"
+                                FontSize="11"
+                                Foreground="{StaticResource ErpBrushTextSecondary}"
                                 FontFamily="Segoe UI"
                                 Margin="0,2,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- ─── الأسعار ─── -->
-                    <TextBlock Text="💰 تحديث الأسعار"
+                    <TextBlock Text=" تحديث الأسعار"
                                FontSize="14" FontWeight="Bold"
                                Foreground="{StaticResource ErpBrushNavSidebar}"
                                FontFamily="Segoe UI"
                                Margin="0,0,0,14"/>
 
-                    <!-- السعر الأدنى -->
                     <TextBlock Text="السعر الأدنى (ر.ي)"
                                FontSize="12" FontWeight="SemiBold"
-                               Foreground="#555"
-                               FontFamily="Segoe UI"
+                               Foreground="#555" FontFamily="Segoe UI"
                                Margin="0,0,0,4"/>
                     <TextBox
                         Text="{Binding FormPriceMin,
                             UpdateSourceTrigger=PropertyChanged}"
-                        Height="38" FontSize="13"
-                        FontFamily="Segoe UI"
-                        Padding="10,0"
-                        VerticalContentAlignment="Center"
+                        Height="38" FontSize="13" FontFamily="Segoe UI"
+                        Padding="10,0" VerticalContentAlignment="Center"
                         BorderBrush="{StaticResource ErpBrushBorderInput}"
-                        BorderThickness="1.5"
-                        Margin="0,0,0,10"/>
+                        BorderThickness="1.5" Margin="0,0,0,10"/>
 
-                    <!-- السعر الأعلى -->
                     <TextBlock Text="السعر الأعلى (ر.ي)"
                                FontSize="12" FontWeight="SemiBold"
-                               Foreground="#555"
-                               FontFamily="Segoe UI"
+                               Foreground="#555" FontFamily="Segoe UI"
                                Margin="0,0,0,4"/>
                     <TextBox
                         Text="{Binding FormPriceMax,
                             UpdateSourceTrigger=PropertyChanged}"
-                        Height="38" FontSize="13"
-                        FontFamily="Segoe UI"
-                        Padding="10,0"
-                        VerticalContentAlignment="Center"
+                        Height="38" FontSize="13" FontFamily="Segoe UI"
+                        Padding="10,0" VerticalContentAlignment="Center"
                         BorderBrush="{StaticResource ErpBrushBorderInput}"
-                        BorderThickness="1.5"
-                        Margin="0,0,0,10"/>
+                        BorderThickness="1.5" Margin="0,0,0,10"/>
 
-                    <!-- السعر الافتراضي -->
                     <TextBlock Text="السعر الافتراضي (ر.ي)"
                                FontSize="12" FontWeight="SemiBold"
-                               Foreground="#555"
-                               FontFamily="Segoe UI"
+                               Foreground="#555" FontFamily="Segoe UI"
                                Margin="0,0,0,4"/>
                     <TextBox
                         Text="{Binding FormDefaultPrice,
                             UpdateSourceTrigger=PropertyChanged}"
-                        Height="38" FontSize="13"
-                        FontFamily="Segoe UI"
-                        Padding="10,0"
-                        VerticalContentAlignment="Center"
+                        Height="38" FontSize="13" FontFamily="Segoe UI"
+                        Padding="10,0" VerticalContentAlignment="Center"
                         BorderBrush="{StaticResource ErpBrushBorderInput}"
-                        BorderThickness="1.5"
-                        Margin="0,0,0,14"/>
+                        BorderThickness="1.5" Margin="0,0,0,14"/>
 
                     <Button Content="💾 حفظ الأسعار"
                             Command="{Binding SavePriceCommand}"
-                            Height="40" FontSize="13"
-                            FontWeight="Bold"
+                            Height="40" FontSize="13" FontWeight="Bold"
                             FontFamily="Segoe UI"
-                            Background="#E67E22"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand"
+                            Background="#E67E22" Foreground="White"
+                            BorderThickness="0" Cursor="Hand"
                             Margin="0,0,0,20"/>
 
-                    <Separator Background="{StaticResource ErpBrushPageBg}" Margin="0,0,0,16"/>
+                    <Separator Background="{StaticResource ErpBrushPageBg}"
+                               Margin="0,0,0,16"/>
 
-                    <!-- ─── حد المخزون ─── -->
-                    <TextBlock Text="📦 الحد الأدنى للمخزون"
+                    <TextBlock Text=" الحد الأدنى للمخزون"
                                FontSize="14" FontWeight="Bold"
                                Foreground="{StaticResource ErpBrushNavSidebar}"
-                               FontFamily="Segoe UI"
-                               Margin="0,0,0,14"/>
+                               FontFamily="Segoe UI" Margin="0,0,0,14"/>
 
                     <TextBlock
                         Text="التنبيه عند وصول المخزون لهذا الحد"
-                        FontSize="11" Foreground="{StaticResource ErpBrushTextSecondary}"
-                        FontFamily="Segoe UI"
-                        Margin="0,0,0,8"/>
+                        FontSize="11"
+                        Foreground="{StaticResource ErpBrushTextSecondary}"
+                        FontFamily="Segoe UI" Margin="0,0,0,8"/>
 
                     <TextBox
                         Text="{Binding FormMinThreshold,
                             UpdateSourceTrigger=PropertyChanged}"
-                        Height="38" FontSize="13"
-                        FontFamily="Segoe UI"
-                        Padding="10,0"
-                        VerticalContentAlignment="Center"
+                        Height="38" FontSize="13" FontFamily="Segoe UI"
+                        Padding="10,0" VerticalContentAlignment="Center"
                         BorderBrush="{StaticResource ErpBrushBorderInput}"
-                        BorderThickness="1.5"
-                        Margin="0,0,0,12"/>
+                        BorderThickness="1.5" Margin="0,0,0,12"/>
 
                     <Button Content="💾 حفظ الحد الأدنى"
                             Command="{Binding SaveThresholdCommand}"
-                            Height="38" FontSize="13"
-                            FontFamily="Segoe UI"
-                            Background="#2980B9"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand"
+                            Height="38" FontSize="13" FontFamily="Segoe UI"
+                            Background="#2980B9" Foreground="White"
+                            BorderThickness="0" Cursor="Hand"
                             Margin="0,0,0,20"/>
 
-                    <Separator Background="{StaticResource ErpBrushPageBg}" Margin="0,0,0,16"/>
+                    <Separator Background="{StaticResource ErpBrushPageBg}"
+                               Margin="0,0,0,16"/>
 
-                    <!-- ─── تفعيل/إيقاف ─── -->
-                    <Button
-                        Command="{Binding ToggleActiveCommand}"
-                        Height="38" FontSize="13"
-                        FontFamily="Segoe UI"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        Margin="0,0,0,12">
+                    <Button Command="{Binding ToggleActiveCommand}"
+                            Height="38" FontSize="13" FontFamily="Segoe UI"
+                            BorderThickness="0" Cursor="Hand"
+                            Margin="0,0,0,12">
                         <Button.Content>
                             <TextBlock
                                 Text="{Binding SelectedProduct.IsActive,
@@ -416,15 +507,13 @@
                         </Button.Foreground>
                     </Button>
 
-                    <!-- رسائل -->
                     <Border Background="#FDEDEC" CornerRadius="8"
                             Padding="10,6" Margin="0,4,0,0"
                             Visibility="{Binding HasError,
                                 Converter={StaticResource BoolToVisibility}}">
                         <TextBlock Text="{Binding ErrorMessage}"
                                    Foreground="#E74C3C" FontSize="12"
-                                   FontFamily="Segoe UI"
-                                   TextWrapping="Wrap"/>
+                                   FontFamily="Segoe UI" TextWrapping="Wrap"/>
                     </Border>
 
                     <Border Background="#EAFAF1" CornerRadius="8"
@@ -436,17 +525,14 @@
                                    FontFamily="Segoe UI"/>
                     </Border>
 
-                    <!-- إغلاق -->
                     <Button Content="✕ إغلاق"
                             Command="{Binding CancelFormCommand}"
-                            Height="34" FontSize="12"
-                            FontFamily="Segoe UI"
+                            Height="34" FontSize="12" FontFamily="Segoe UI"
                             Background="{StaticResource ErpBrushPageBg}"
                             Foreground="{StaticResource ErpBrushTextSecondary}"
                             BorderThickness="1"
                             BorderBrush="{StaticResource ErpBrushBorderInput}"
-                            Cursor="Hand"
-                            Margin="0,12,0,0"/>
+                            Cursor="Hand" Margin="0,12,0,0"/>
                 </StackPanel>
             </ScrollViewer>
         </Border>

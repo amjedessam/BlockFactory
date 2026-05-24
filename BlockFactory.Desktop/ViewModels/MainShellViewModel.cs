@@ -289,10 +289,16 @@ namespace BlockFactory.Desktop.ViewModels
             {
                 settingsGroup.Items.Add(new NavigationMenuItem
                 {
+                    Title = "الإعدادات",
+                    Icon = "⚙",
+                    ViewName = "Settings"
+                });
+            /*    settingsGroup.Items.Add(new NavigationMenuItem
+                {
                     Title = "المنتجات والأسعار",
                     Icon = "🧱",
                     ViewName = "Products"
-                });
+                });*/
                 settingsGroup.Items.Add(new NavigationMenuItem
                 {
                     Title = "إدارة المستخدمين",
