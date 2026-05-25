@@ -16,5 +16,5 @@ C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\App.xaml
 338-165176214
 Controls\LoadingOverlay.xaml;Controls\NotificationPanel.xaml;MainWindow.xaml;Themes\EnterpriseTheme.xaml;View\Auth\LoginWindow.xaml;View\Customers\CustomersView.xaml;View\Customers\PledgesView.xaml;View\Dashboard\DashboardView.xaml;View\Finance\FinanceView.xaml;View\HR\SalariesView.xaml;View\HR\WorkersView.xaml;View\Inventory\InventoryView.xaml;View\MainShell.xaml;View\Orders\NewOrderView.xaml;View\Orders\OrdersView.xaml;View\Production\ProductionView.xaml;View\Reports\ReportsView.xaml;View\Settings\ProductsView.xaml;View\Settings\SettingsView.xaml;View\Settings\UsersView.xaml;View\Suppliers\SuppliersView.xaml;
 
-True
+False
 

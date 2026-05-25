@@ -121,44 +121,184 @@
                                             BlurRadius="10"
                                             ShadowDepth="3"/>
                                     </Border.Effect>
-                                    <ListBox
+                                    <StackPanel>
+                                        <ListBox
     x:Name="CustomerListBox"
     ItemsSource="{Binding CustomerResults}"
     BorderThickness="0"
     MaxHeight="200"
     FontFamily="Segoe UI"
     MouseLeftButtonUp="CustomerListBox_MouseLeftButtonUp">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Margin="10,6">
-                                                    <TextBlock
-                                                        Text="{Binding FullName}"
-                                                        FontSize="13"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="#2C3E50"/>
-                                                    <StackPanel Orientation="Horizontal">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Margin="10,6">
                                                         <TextBlock
-                                                            Text="{Binding Phone}"
-                                                            FontSize="11"
-                                                            Foreground="#7F8C8D"
-                                                            Margin="0,0,10,0"/>
-                                                        <TextBlock
-                                                            FontSize="11"
-                                                            Foreground="#E74C3C"
-                                                            Visibility="{Binding TotalDebt,
-                                                                Converter={StaticResource DecimalToBool}}">
-                                                            <Run Text="دين:"/>
-                                                            <Run Text="{Binding TotalDebt,
-                                                                StringFormat='{}{0:N0} ر.ي'}"/>
-                                                        </TextBlock>
+                                                            Text="{Binding FullName}"
+                                                            FontSize="13"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#2C3E50"/>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock
+                                                                Text="{Binding Phone}"
+                                                                FontSize="11"
+                                                                Foreground="#7F8C8D"
+                                                                Margin="0,0,10,0"/>
+                                                            <TextBlock
+                                                                FontSize="11"
+                                                                Foreground="#E74C3C"
+                                                                Visibility="{Binding TotalDebt,
+                                                                    Converter={StaticResource DecimalToBool}}">
+                                                                <Run Text="دين:"/>
+                                                                <Run Text="{Binding TotalDebt,
+                                                                    StringFormat='{}{0:N0} ر.ي'}"/>
+                                                            </TextBlock>
+                                                        </StackPanel>
                                                     </StackPanel>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+
+                                    </StackPanel>
                                 </Border>
                             </Popup>
                         </Grid>
+
+                        <!-- زر إضافة عميل جديد أسفل حقل البحث -->
+                        <Button
+                            Command="{Binding ShowQuickAddCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            HorizontalAlignment="Right"
+                            Margin="0,8,0,0"
+                            Padding="8,6">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="➕ "
+                                           FontSize="12"
+                                           Foreground="#21416A"/>
+                                <TextBlock Text="إضافة عميل جديد"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="#21416A"
+                                           FontFamily="Segoe UI"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- ── نموذج الإضافة السريعة ── -->
+                        <Border
+                            Visibility="{Binding IsQuickAddVisible,
+                                Converter={StaticResource BoolToVisibility}}"
+                            Background="#F0F7FF"
+                            BorderBrush="#1A73E8"
+                            BorderThickness="1.5"
+                            CornerRadius="10"
+                            Padding="16"
+                            Margin="0,10,0,0">
+                            <StackPanel>
+
+                                <!-- رأس النموذج -->
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="➕ "
+                                                   FontSize="14"
+                                                   Foreground="#21416A"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Text="إضافة عميل جديد"
+                                                   FontSize="13"
+                                                   FontWeight="Bold"
+                                                   Foreground="#1A2E4A"
+                                                   FontFamily="Segoe UI"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1"
+                                            Content="✕"
+                                            Command="{Binding CancelQuickAddCommand}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Foreground="#7F8C8D"
+                                            FontSize="13"
+                                            Cursor="Hand"
+                                            Padding="4"/>
+                                </Grid>
+
+                                <!-- حقل الاسم -->
+                                <TextBlock Text="الاسم كامل"
+                                           Style="{StaticResource FieldLabel}"/>
+                                <TextBox Style="{StaticResource InputBox}"
+                                         Text="{Binding QuickAddName,
+                                             UpdateSourceTrigger=PropertyChanged}"
+                                         Margin="0,0,0,10"/>
+
+                                <!-- حقل الهاتف -->
+                                <TextBlock Text="رقم الهاتف"
+                                           Style="{StaticResource FieldLabel}"/>
+                                <TextBox Style="{StaticResource InputBox}"
+                                         Text="{Binding QuickAddPhone,
+                                             UpdateSourceTrigger=PropertyChanged}"
+                                         Margin="0,0,0,10"/>
+
+                                <!-- حقل العنوان -->
+                                <TextBlock Text="العنوان"
+                                           Style="{StaticResource FieldLabel}"/>
+                                <TextBox Style="{StaticResource InputBox}"
+                                         Text="{Binding QuickAddAddress,
+                                             UpdateSourceTrigger=PropertyChanged}"
+                                         Margin="0,0,0,12"/>
+
+                                <!-- رسالة الخطأ -->
+                                <Border Background="#FDEDEC"
+                                        CornerRadius="6"
+                                        Padding="10,6"
+                                        Margin="0,0,0,10"
+                                        Visibility="{Binding HasQuickAddError,
+                                            Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{Binding QuickAddError}"
+                                               FontSize="12"
+                                               Foreground="#E74C3C"
+                                               FontFamily="Segoe UI"
+                                               TextWrapping="Wrap"/>
+                                </Border>
+
+                                <!-- أزرار الحفظ / إلغاء -->
+                                <StackPanel Orientation="Horizontal">
+                                    <Button
+                                        Command="{Binding SaveQuickAddCommand}"
+                                        Height="36"
+                                        Padding="18,0"
+                                        FontSize="13"
+                                        FontWeight="SemiBold"
+                                        FontFamily="Segoe UI"
+                                        Background="#1A73E8"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Margin="0,0,8,0">
+                                        <TextBlock>
+                                            <Run Text="💾 "/>
+                                            <Run Text="حفظ وتحديد"/>
+                                        </TextBlock>
+                                    </Button>
+                                    <Button
+                                        Command="{Binding CancelQuickAddCommand}"
+                                        Height="36"
+                                        Padding="14,0"
+                                        FontSize="13"
+                                        FontFamily="Segoe UI"
+                                        Background="White"
+                                        Foreground="#7F8C8D"
+                                        BorderThickness="1"
+                                        BorderBrush="#DDE1E7"
+                                        Cursor="Hand">
+                                        <TextBlock Text="إلغاء"/>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
 
                         <!-- تحذير الدين -->
                         <TextBlock

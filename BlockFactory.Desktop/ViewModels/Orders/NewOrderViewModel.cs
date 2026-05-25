@@ -43,15 +43,15 @@ namespace BlockFactory.Desktop.ViewModels.Orders
         private CancellationTokenSource? _searchCts;
 
         private string _customerSearch = string.Empty;
-       /* public string CustomerSearch
-        {
-            get => _customerSearch;
-            set
-            {
-                SetProperty(ref _customerSearch, value);
-                _ = SearchCustomersDebounced(value);
-            }
-        }*/
+        /* public string CustomerSearch
+         {
+             get => _customerSearch;
+             set
+             {
+                 SetProperty(ref _customerSearch, value);
+                 _ = SearchCustomersDebounced(value);
+             }
+         }*/
 
         private ObservableCollection<CustomerLookupDto> _customerResults = new();
         public ObservableCollection<CustomerLookupDto> CustomerResults
@@ -121,6 +121,53 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             : SelectedCustomer.TotalDebt > 0
                 ? $"⚠️ دين سابق: {SelectedCustomer.TotalDebt:N0} ر.ي"
                 : "✅ لا يوجد دين سابق";
+
+        // ─── إضافة عميل سريعة ───────────────────────
+
+        private bool _isQuickAddVisible;
+        public bool IsQuickAddVisible
+        {
+            get => _isQuickAddVisible;
+            set => SetProperty(ref _isQuickAddVisible, value);
+        }
+
+        private string _quickAddName = string.Empty;
+        public string QuickAddName
+        {
+            get => _quickAddName;
+            set => SetProperty(ref _quickAddName, value);
+        }
+
+        private string _quickAddPhone = string.Empty;
+        public string QuickAddPhone
+        {
+            get => _quickAddPhone;
+            set => SetProperty(ref _quickAddPhone, value);
+        }
+
+        private string _quickAddAddress = string.Empty;
+        public string QuickAddAddress
+        {
+            get => _quickAddAddress;
+            set => SetProperty(ref _quickAddAddress, value);
+        }
+
+        private string _quickAddError = string.Empty;
+        public string QuickAddError
+        {
+            get => _quickAddError;
+            set
+            {
+                SetProperty(ref _quickAddError, value);
+                OnPropertyChanged(nameof(HasQuickAddError));
+            }
+        }
+
+        public bool HasQuickAddError => !string.IsNullOrEmpty(_quickAddError);
+
+        public RelayCommand ShowQuickAddCommand { get; private set; } = null!;
+        public RelayCommand CancelQuickAddCommand { get; private set; } = null!;
+        public AsyncRelayCommand SaveQuickAddCommand { get; private set; } = null!;
 
         // ─── بيانات الطلب ───────────────────────────
 
@@ -396,6 +443,89 @@ namespace BlockFactory.Desktop.ViewModels.Orders
                 _ => CanSave());
 
             ClearFormCommand = new RelayCommand(_ => ClearForm());
+
+            // ─── إضافة عميل سريعة ───────────────────
+            ShowQuickAddCommand = new RelayCommand(_ =>
+            {
+                QuickAddName = CustomerSearch.Trim();
+                QuickAddPhone = string.Empty;
+                QuickAddAddress = string.Empty;
+                QuickAddError = string.Empty;
+                CustomerResults.Clear();
+                IsQuickAddVisible = true;
+            });
+
+            CancelQuickAddCommand = new RelayCommand(_ =>
+            {
+                IsQuickAddVisible = false;
+                QuickAddName = string.Empty;
+                QuickAddPhone = string.Empty;
+                QuickAddAddress = string.Empty;
+                QuickAddError = string.Empty;
+            });
+
+            SaveQuickAddCommand = new AsyncRelayCommand(
+                async _ =>
+                {
+                    if (string.IsNullOrWhiteSpace(QuickAddName))
+                    {
+                        QuickAddError = "اسم العميل مطلوب";
+                        return;
+                    }
+                    try
+                    {
+                        IsLoading = true;
+                        QuickAddError = string.Empty;
+
+                        var result = await _customerService.CreateCustomerAsync(
+                            new BlockFactory.Core.DTOs.Customers.CreateCustomerDto
+                            {
+                                FullName = QuickAddName.Trim(),
+                                Phone = QuickAddPhone.Trim(),
+                                Address = QuickAddAddress.Trim()
+                            });
+
+                        if (result.Success)
+                        {
+                            // تحميل العميل الجديد وتحديده تلقائياً
+                            var customers = await _customerService
+                                .SearchCustomersAsync(QuickAddName.Trim());
+
+                            var found = customers
+                                .FirstOrDefault(c =>
+                                    c.FullName.Equals(
+                                        QuickAddName.Trim(),
+                                        StringComparison.OrdinalIgnoreCase));
+
+                            if (found != null)
+                                SelectedCustomer = new CustomerLookupDto
+                                {
+                                    Id = found.Id,
+                                    FullName = found.FullName,
+                                    Phone = found.Phone,
+                                    TotalDebt = found.TotalDebt
+                                };
+
+                            IsQuickAddVisible = false;
+                            QuickAddName = string.Empty;
+                            QuickAddPhone = string.Empty;
+                            QuickAddAddress = string.Empty;
+                        }
+                        else
+                        {
+                            QuickAddError = result.Message;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        QuickAddError = $"خطأ: {ex.Message}";
+                    }
+                    finally
+                    {
+                        IsLoading = false;
+                    }
+                },
+                _ => !string.IsNullOrWhiteSpace(QuickAddName));
         }
 
         private void InitializeDefaults()
@@ -590,12 +720,50 @@ namespace BlockFactory.Desktop.ViewModels.Orders
                 {
                     ShowSuccess(result.Message);
 
-                    // ✅ MVVM-safe: الـ View يتعامل مع MessageBox
                     bool shouldPrint = PrintRequested != null &&
                                        await PrintRequested.Invoke();
 
                     if (shouldPrint)
-                        await _orderService.GenerateInvoicePdfAsync(result.Data);
+                    {
+                        try
+                        {
+                            // ① جلب بايتات الـ PDF
+                            var pdfBytes = await _orderService
+                                .GenerateInvoicePdfAsync(result.Data);
+
+                            if (pdfBytes != null && pdfBytes.Length > 0)
+                            {
+                                // ② حفظ الملف في مجلد المستندات
+                                var folder = System.IO.Path.Combine(
+                                    Environment.GetFolderPath(
+                                        Environment.SpecialFolder.MyDocuments),
+                                    "BlockFactory_Invoices");
+
+                                System.IO.Directory.CreateDirectory(folder);
+
+                                var fileName = $"Invoice_{result.Data}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                                var filePath = System.IO.Path.Combine(folder, fileName);
+
+                                await System.IO.File.WriteAllBytesAsync(filePath, pdfBytes);
+
+                                // ③ فتح الـ PDF بالتطبيق الافتراضي
+                                System.Diagnostics.Process.Start(
+                                    new System.Diagnostics.ProcessStartInfo
+                                    {
+                                        FileName = filePath,
+                                        UseShellExecute = true
+                                    });
+                            }
+                            else
+                            {
+                                ShowError("⚠️ لم يتم توليد الفاتورة — تحقق من بيانات الطلب");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowError($"خطأ في الطباعة: {ex.Message}");
+                        }
+                    }
 
                     ClearForm();
                 }

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using BlockFactory.Core.DTOs.Orders;
 using BlockFactory.Core.DTOs.Suppliers;
 using BlockFactory.Core.Interfaces.Services;
+using System.Diagnostics;
+using System.IO;
 using BlockFactory.Core.Models.Suppliers;
 using BlockFactory.Desktop.Commands;
 using BlockFactory.Desktop.ViewModels.Base;
@@ -19,10 +21,14 @@ namespace BlockFactory.Desktop.ViewModels.Suppliers
     public class SuppliersViewModel : BaseViewModel
     {
         private readonly ISupplierService _supplierService;
+        private readonly IReportService? _reportService;
 
-        public SuppliersViewModel(ISupplierService supplierService)
+        public SuppliersViewModel(
+            ISupplierService supplierService,
+            IReportService? reportService = null)
         {
             _supplierService = supplierService;
+            _reportService = reportService;
             InitializeCommands();
         }
 
@@ -684,6 +690,7 @@ namespace BlockFactory.Desktop.ViewModels.Suppliers
                 if (result.Success)
                 {
                     ShowSuccess(result.Message);
+                    var invoiceId = result.Data;
                     var supplierId = SelectedSupplier.Id;
                     IsPurchaseInvoiceFormVisible = false;
                     ClearPurchaseInvoiceForm();
@@ -693,6 +700,19 @@ namespace BlockFactory.Desktop.ViewModels.Suppliers
                         SelectedSupplier = sel;
                     else
                         await LoadInvoicesAsync(supplierId);
+
+                    // ─── سؤال الطباعة ────────────────────
+                    var print = MessageBox.Show(
+                        "هل تريد طباعة فاتورة الشراء؟",
+                        "طباعة الفاتورة",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question,
+                        MessageBoxResult.Yes,
+                        MessageBoxOptions.RightAlign |
+                        MessageBoxOptions.RtlReading);
+
+                    if (print == MessageBoxResult.Yes)
+                        await PrintSupplierInvoiceAsync(invoiceId);
                 }
                 else
                     ShowError(result.Message);
@@ -700,6 +720,50 @@ namespace BlockFactory.Desktop.ViewModels.Suppliers
             catch (Exception ex)
             {
                 ShowError($"خطأ: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task PrintSupplierInvoiceAsync(int invoiceId)
+        {
+            try
+            {
+                if (_reportService == null)
+                {
+                    ShowError("خدمة التقارير غير متوفرة");
+                    return;
+                }
+
+                IsLoading = true;
+                var pdfBytes = await _reportService
+                    .GenerateInvoicePdfAsync(invoiceId);
+
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                {
+                    ShowError("لم يتم إنشاء ملف PDF");
+                    return;
+                }
+
+                // حفظ مؤقت وفتح للطباعة
+                var tempPath = Path.Combine(
+                    Path.GetTempPath(),
+                    $"SupplierInvoice_{invoiceId}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+
+                await File.WriteAllBytesAsync(tempPath, pdfBytes);
+
+                // فتح PDF في المتصفح/Adobe للطباعة
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = tempPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                ShowError($"خطأ في الطباعة: {ex.Message}");
             }
             finally
             {
