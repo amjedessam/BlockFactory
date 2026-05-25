@@ -60,6 +60,31 @@ namespace BlockFactory.Core.DTOs.Reports
         public decimal TotalPrice { get; set; }
     }
 
+    public class SupplierInvoiceReportDto
+    {
+        public string InvoiceNumber { get; set; } = string.Empty;
+        public DateTime InvoiceDate { get; set; }
+        public string SupplierName { get; set; } = string.Empty;
+        public string? SupplierPhone { get; set; }
+        public string? SupplierAddress { get; set; }
+        public string PaymentType { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+        public decimal PaidAmount { get; set; }
+        public decimal RemainingAmount { get; set; }
+        public DateTime? DueDate { get; set; }
+        public string? Notes { get; set; }
+        public List<SupplierInvoiceReportItemDto> Items { get; set; } = new();
+    }
+
+    public class SupplierInvoiceReportItemDto
+    {
+        public string MaterialName { get; set; } = string.Empty;
+        public decimal Quantity { get; set; }
+        public string Unit { get; set; } = string.Empty;
+        public decimal UnitPrice { get; set; }
+        public decimal TotalPrice { get; set; }
+    }
+
     public class DailySalesReportDto
     {
         public DateTime ReportDate { get; set; }

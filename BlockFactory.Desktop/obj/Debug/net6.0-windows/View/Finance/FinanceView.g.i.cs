@@ -52,7 +52,7 @@ namespace BlockFactory.Desktop.Views.Finance {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/BlockFactory.Desktop;V1.0.0.0;component/view/finance/financeview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/BlockFactory.Desktop;component/view/finance/financeview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\View\Finance\FinanceView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

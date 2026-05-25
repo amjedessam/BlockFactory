@@ -739,7 +739,7 @@ namespace BlockFactory.Desktop.ViewModels.Suppliers
 
                 IsLoading = true;
                 var pdfBytes = await _reportService
-                    .GenerateInvoicePdfAsync(invoiceId);
+                    .GenerateSupplierInvoicePdfAsync(invoiceId);
 
                 if (pdfBytes == null || pdfBytes.Length == 0)
                 {

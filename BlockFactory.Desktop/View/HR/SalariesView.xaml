@@ -221,96 +221,222 @@
             </Grid>
         </Border>
 
-        <!-- ─── DataGrid الرواتب ─── -->
-        <Border Grid.Row="2" Background="{StaticResource ErpBrushCard}" CornerRadius="12">
-            <Border.Effect>
-                <DropShadowEffect Color="#000" Opacity="0.05"
-                                  BlurRadius="8" ShadowDepth="1"/>
-            </Border.Effect>
-            <DataGrid
-                ItemsSource="{Binding Salaries}"
-                SelectedItem="{Binding SelectedSalary}"
-                AutoGenerateColumns="False"
-                IsReadOnly="True"
-                GridLinesVisibility="Horizontal"
-                HorizontalGridLinesBrush="{StaticResource ErpBrushGridLine}"
-                HeadersVisibility="Column"
-                BorderThickness="0"
-                Background="{StaticResource ErpBrushCard}"
-                RowBackground="{StaticResource ErpBrushCard}"
-                AlternatingRowBackground="{StaticResource ErpBrushRowAlt}"
-                CanUserResizeRows="False"
-                FontFamily="Segoe UI"
-                FontSize="13"
-                RowHeight="44">
+        <!-- ─── محتوى الرواتب ─── -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="{Binding IsPayFormVisible,
+                    Converter={StaticResource BoolToWidth},
+                    ConverterParameter='280|0'}"/>
+            </Grid.ColumnDefinitions>
 
-                <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="#F8F9FA"/>
-                        <Setter Property="Foreground" Value="{StaticResource ErpBrushTextSecondary}"/>
-                        <Setter Property="FontSize" Value="12"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="Padding" Value="14,10"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                    </Style>
-                </DataGrid.ColumnHeaderStyle>
+            <!-- DataGrid الرواتب -->
+            <Border Grid.Column="0" Background="{StaticResource ErpBrushCard}" CornerRadius="12" Margin="0,0,10,0">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000" Opacity="0.05"
+                                      BlurRadius="8" ShadowDepth="1"/>
+                </Border.Effect>
+                <DataGrid
+                    ItemsSource="{Binding Salaries}"
+                    SelectedItem="{Binding SelectedSalary}"
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    GridLinesVisibility="Horizontal"
+                    HorizontalGridLinesBrush="{StaticResource ErpBrushGridLine}"
+                    HeadersVisibility="Column"
+                    BorderThickness="0"
+                    Background="{StaticResource ErpBrushCard}"
+                    RowBackground="{StaticResource ErpBrushCard}"
+                    AlternatingRowBackground="{StaticResource ErpBrushRowAlt}"
+                    CanUserResizeRows="False"
+                    FontFamily="Segoe UI"
+                    FontSize="13"
+                    RowHeight="44">
 
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="العامل"
-                        Binding="{Binding WorkerName}" Width="*"/>
-                    <DataGridTextColumn Header="الراتب"
-                        Binding="{Binding BasicSalary,
-                            StringFormat='{}{0:N0}'}"
-                        Width="100"/>
-                    <DataGridTextColumn Header="المكافأة"
-                        Binding="{Binding Bonus,
-                            StringFormat='{}{0:N0}'}"
-                        Width="90"/>
-                    <DataGridTextColumn Header="السلف"
-                        Binding="{Binding TotalAdvances,
-                            StringFormat='{}{0:N0}'}"
-                        Width="90"/>
-                    <DataGridTextColumn Header="الخصومات"
-                        Binding="{Binding TotalDeductions,
-                            StringFormat='{}{0:N0}'}"
-                        Width="90"/>
-                    <DataGridTextColumn Header="الصافي"
-                        Binding="{Binding NetSalary,
-                            StringFormat='{}{0:N0} ر.ي'}"
-                        Width="110"/>
-                    <DataGridTextColumn Header="المصروف"
-                        Binding="{Binding PaidAmount,
-                            StringFormat='{}{0:N0} ر.ي'}"
-                        Width="100"/>
-                    <DataGridTextColumn Header="المتبقي"
-                        Binding="{Binding RemainingAmount,
-                            StringFormat='{}{0:N0} ر.ي'}"
-                        Width="100"/>
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F8F9FA"/>
+                            <Setter Property="Foreground" Value="{StaticResource ErpBrushTextSecondary}"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Padding" Value="14,10"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
 
-                    <!-- الحالة ملونة -->
-                    <DataGridTemplateColumn Header="الحالة" Width="90">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Border CornerRadius="6" Padding="8,3"
-                                        HorizontalAlignment="Center"
-                                        Margin="4,8">
-                                    <Border.Background>
-                                        <SolidColorBrush
-                                            Color="{Binding StatusColor}"
-                                            Opacity="0.15"/>
-                                    </Border.Background>
-                                    <TextBlock
-                                        Text="{Binding Status}"
-                                        FontSize="11" FontWeight="SemiBold"
-                                        Foreground="{Binding StatusColor}"
-                                        HorizontalAlignment="Center"/>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Border>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="العامل"
+                            Binding="{Binding WorkerName}" Width="*"/>
+                        <DataGridTextColumn Header="الراتب"
+                            Binding="{Binding BasicSalary,
+                                StringFormat='{}{0:N0}'}"
+                            Width="100"/>
+                        <DataGridTextColumn Header="المكافأة"
+                            Binding="{Binding Bonus,
+                                StringFormat='{}{0:N0}'}"
+                            Width="90"/>
+                        <DataGridTextColumn Header="السلف"
+                            Binding="{Binding TotalAdvances,
+                                StringFormat='{}{0:N0}'}"
+                            Width="90"/>
+                        <DataGridTextColumn Header="الخصومات"
+                            Binding="{Binding TotalDeductions,
+                                StringFormat='{}{0:N0}'}"
+                            Width="90"/>
+                        <DataGridTextColumn Header="الصافي"
+                            Binding="{Binding NetSalary,
+                                StringFormat='{}{0:N0} ر.ي'}"
+                            Width="110"/>
+                        <DataGridTextColumn Header="المصروف"
+                            Binding="{Binding PaidAmount,
+                                StringFormat='{}{0:N0} ر.ي'}"
+                            Width="100"/>
+                        <DataGridTextColumn Header="المتبقي"
+                            Binding="{Binding RemainingAmount,
+                                StringFormat='{}{0:N0} ر.ي'}"
+                            Width="100"/>
+
+                        <!-- الحالة ملونة -->
+                        <DataGridTemplateColumn Header="الحالة" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="6" Padding="8,3"
+                                            HorizontalAlignment="Center"
+                                            Margin="4,8">
+                                        <Border.Background>
+                                            <SolidColorBrush
+                                                Color="{Binding StatusColor}"
+                                                Opacity="0.15"/>
+                                        </Border.Background>
+                                        <TextBlock
+                                            Text="{Binding Status}"
+                                            FontSize="11" FontWeight="SemiBold"
+                                            Foreground="{Binding StatusColor}"
+                                            HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- ══ نموذج الدفع ══ -->
+            <Border Grid.Column="1"
+                    Background="{StaticResource ErpBrushCard}" CornerRadius="12"
+                    Padding="20" Margin="0,0,0,0"
+                    Visibility="{Binding IsPayFormVisible,
+                        Converter={StaticResource BoolToVisibility}}">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000" Opacity="0.05"
+                                      BlurRadius="10" ShadowDepth="2"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="💵 صرف راتب"
+                               FontSize="14" FontWeight="Bold"
+                               Foreground="#27AE60"
+                               FontFamily="Segoe UI"
+                               Margin="0,0,0,14"/>
+
+                    <!-- بيانات العامل -->
+                    <Border Background="#EAFAF1" CornerRadius="8"
+                            Padding="10,8" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock
+                                Text="{Binding SelectedSalary.WorkerName,
+                                    FallbackValue='---'}"
+                                FontSize="13" FontWeight="Bold"
+                                Foreground="#27AE60"
+                                FontFamily="Segoe UI"/>
+                            <TextBlock FontSize="11"
+                                       Foreground="{StaticResource ErpBrushTextSecondary}"
+                                       FontFamily="Segoe UI">
+                                <Run Text="المتبقي:"/>
+                                <Run Text="{Binding SelectedSalary.RemainingAmount,
+                                    FallbackValue='0',
+                                    StringFormat='{}{0:N0} ر.ي'}"
+                                     Foreground="#E74C3C"
+                                     FontWeight="Bold"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- المبلغ -->
+                    <TextBlock Text="المبلغ (ر.ي) "
+                               FontSize="12" FontWeight="SemiBold"
+                               Foreground="#555"
+                               FontFamily="Segoe UI"
+                               Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding PayAmount,
+                                 UpdateSourceTrigger=PropertyChanged}"
+                             Height="38" FontSize="14"
+                             FontFamily="Segoe UI"
+                             Padding="10,0"
+                             VerticalContentAlignment="Center"
+                             BorderBrush="#27AE60"
+                             BorderThickness="2"
+                             Margin="0,0,0,12"/>
+
+                    <!-- ملاحظات -->
+                    <TextBlock Text="ملاحظات"
+                               FontSize="12" FontWeight="SemiBold"
+                               Foreground="#555"
+                               FontFamily="Segoe UI"
+                               Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding PayNotes,
+                                 UpdateSourceTrigger=PropertyChanged}"
+                             Height="60" TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalContentAlignment="Top"
+                             FontSize="12" FontFamily="Segoe UI"
+                             Padding="8"
+                             BorderBrush="{StaticResource ErpBrushBorderInput}"
+                             BorderThickness="1.5"
+                             Margin="0,0,0,16"/>
+
+                    <!-- رسائل -->
+                    <Border Background="#FDEDEC" CornerRadius="8"
+                            Padding="10,6" Margin="0,0,0,8"
+                            Visibility="{Binding HasError,
+                                Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding ErrorMessage}"
+                                   Foreground="#E74C3C" FontSize="11"
+                                   FontFamily="Segoe UI"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+
+                    <Border Background="#EAFAF1" CornerRadius="8"
+                            Padding="10,6" Margin="0,0,0,8"
+                            Visibility="{Binding SuccessMessage,
+                                Converter={StaticResource StringToVisibility}}">
+                        <TextBlock Text="{Binding SuccessMessage}"
+                                   Foreground="#27AE60" FontSize="11"
+                                   FontFamily="Segoe UI"/>
+                    </Border>
+
+                    <Button Content="💾 تأكيد الصرف"
+                            Command="{Binding SavePayCommand}"
+                            Height="40" FontSize="13"
+                            FontWeight="Bold"
+                            FontFamily="Segoe UI"
+                            Background="#27AE60"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="0,0,0,8"/>
+
+                    <Button Content="إلغاء"
+                            Command="{Binding CancelPayCommand}"
+                            Height="34" FontSize="12"
+                            FontFamily="Segoe UI"
+                            Background="{StaticResource ErpBrushPageBg}"
+                            Foreground="{StaticResource ErpBrushTextSecondary}"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource ErpBrushBorderInput}"
+                            Cursor="Hand"/>
+                </StackPanel>
+            </Border>
+        </Grid>
 
         <!-- رسائل -->
         <Border Grid.Row="3" Padding="12,8" CornerRadius="8"

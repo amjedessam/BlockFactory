@@ -94,4 +94,13 @@ C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\sco
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.dll
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.pdb
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.genruntimeconfig.cache
-C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.csproj.CopyComplete
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\bin\Debug\net6.0\BlockFactory.Api.staticwebassets.endpoints.json
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\rpswa.dswa.cache.json
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFactory.Api.sourcelink.json
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\rjimswa.dswa.cache.json
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\rjsmrazor.dswa.cache.json
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\rjsmcshtml.dswa.cache.json
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\staticwebassets.build.json.cache
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\staticwebassets.build.endpoints.json
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\swae.build.ex.cache
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Api\obj\Debug\net6.0\BlockFac.E8E81764.Up2Date

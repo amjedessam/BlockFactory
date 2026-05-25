@@ -60,7 +60,7 @@ namespace BlockFactory.Desktop {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/BlockFactory.Desktop;V1.0.0.0;component/view/mainshell.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/BlockFactory.Desktop;component/view/mainshell.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\View\MainShell.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

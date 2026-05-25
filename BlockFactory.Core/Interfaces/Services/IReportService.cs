@@ -11,6 +11,7 @@ namespace BlockFactory.Core.Interfaces.Services
     public interface IReportService
     {
         Task<InvoiceReportDto?> GetInvoiceDataAsync(int orderId);
+        Task<SupplierInvoiceReportDto?> GetSupplierInvoiceDataAsync(int invoiceId);
         Task<DailySalesReportDto> GetDailySalesAsync(DateTime date);
         Task<CustomerDebtReportDto> GetCustomerDebtReportAsync();
         Task<ProductionReportDto> GetProductionReportAsync(
@@ -19,6 +20,7 @@ namespace BlockFactory.Core.Interfaces.Services
 
         // PDF Generation
         Task<byte[]> GenerateInvoicePdfAsync(int orderId);
+        Task<byte[]> GenerateSupplierInvoicePdfAsync(int invoiceId);
         Task<byte[]> GenerateDailySalesPdfAsync(DateTime date);
         Task<byte[]> GenerateCustomerDebtPdfAsync();
         Task<byte[]> GenerateProductionPdfAsync(

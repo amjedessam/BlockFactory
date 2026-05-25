@@ -1,11 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "h7XKXgVVP7JMOvGVPb2J5MZxLoMLsO5gqs7SG5ZU4gg=",
-  "Source": "BlockFactory.Api",
-  "BasePath": "_content/BlockFactory.Api",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
-}
+{"Version":1,"Hash":"7yG28l7xAq+J4wrGDM+vqrCWEFPpnDNaiAGj5F/mSOU=","Source":"BlockFactory.Api","BasePath":"/","Mode":"Root","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}

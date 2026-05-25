@@ -60,7 +60,7 @@ namespace BlockFactory.Desktop.Controls {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/BlockFactory.Desktop;V1.0.0.0;component/controls/loadingoverlay.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/BlockFactory.Desktop;component/controls/loadingoverlay.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Controls\LoadingOverlay.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);
