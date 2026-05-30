@@ -62,6 +62,47 @@ namespace BlockFactory.Desktop.ViewModels.Orders
         }
 
 
+        // ─── التنقل بالكيبورد في نتائج البحث ──────────
+        private int _highlightedCustomerIndex = -1;
+        public int HighlightedCustomerIndex
+        {
+            get => _highlightedCustomerIndex;
+            set => SetProperty(ref _highlightedCustomerIndex, value);
+        }
+
+        /// <summary>
+        /// يُستدعى من الـ View عند ضغط ↑ ↓ Enter في حقل البحث.
+        /// Key: "Up" | "Down" | "Enter"
+        /// </summary>
+        public void HandleCustomerSearchKey(string key)
+        {
+            if (CustomerResults.Count == 0) return;
+
+            switch (key)
+            {
+                case "Down":
+                    HighlightedCustomerIndex =
+                        Math.Min(HighlightedCustomerIndex + 1,
+                                 CustomerResults.Count - 1);
+                    break;
+
+                case "Up":
+                    HighlightedCustomerIndex =
+                        Math.Max(HighlightedCustomerIndex - 1, 0);
+                    break;
+
+                case "Enter":
+                    if (HighlightedCustomerIndex >= 0 &&
+                        HighlightedCustomerIndex < CustomerResults.Count)
+                    {
+                        SelectedCustomer =
+                            CustomerResults[HighlightedCustomerIndex];
+                        HighlightedCustomerIndex = -1;
+                    }
+                    break;
+            }
+        }
+
         private CustomerLookupDto? _selectedCustomer;
         // ✅ إضافة flag لمنع البحث عند اختيار العميل
         private bool _isSelectingCustomer = false;
@@ -94,8 +135,11 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             set
             {
                 SetProperty(ref _customerSearch, value);
-                if (!_isSelectingCustomer)         // ← لا تبحث عند الاختيار
+                if (!_isSelectingCustomer)
+                {
+                    HighlightedCustomerIndex = -1;  // ← إعادة تصفير التحديد
                     _ = SearchCustomersDebounced(value);
+                }
             }
         }
         /*     public CustomerLookupDto? SelectedCustomer

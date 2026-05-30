@@ -77,5 +77,23 @@ namespace BlockFactory.Core.Interfaces.Services
         /// تُستخدم في شاشة السحب لعرض الأسعار المتاحة
         /// </summary>
         Task<IEnumerable<PriceSnapshotDto>> GetPriceSnapshotAsync(int reservationId);
+
+        // ─── توليد الفواتير PDF ─────────────────────
+
+        /// <summary>
+        /// توليد PDF لفاتورة الحجز (محدد أو مفتوح)
+        /// يُستدعى بعد CreateReservationAsync عند موافقة المستخدم على الطباعة
+        /// </summary>
+        /// <param name="reservationId">معرّف الحجز الذي أرجعه CreateReservationAsync</param>
+        /// <returns>بايتات ملف PDF — null إذا فشل التوليد</returns>
+        Task<byte[]?> GenerateReservationInvoicePdfAsync(int reservationId);
+
+        /// <summary>
+        /// توليد PDF لفاتورة السحب
+        /// يُستدعى بعد CreateWithdrawalAsync عند موافقة المستخدم على الطباعة
+        /// </summary>
+        /// <param name="withdrawalId">معرّف السحب الذي أرجعه CreateWithdrawalAsync</param>
+        /// <returns>بايتات ملف PDF — null إذا فشل التوليد</returns>
+        Task<byte[]?> GenerateWithdrawalInvoicePdfAsync(int withdrawalId);
     }
 }

@@ -1,5 +1,6 @@
 // BlockFactory.Desktop/ViewModels/Reservations/NewReservationViewModel.cs
 
+using System;
 using BlockFactory.Core.DTOs.Customers;
 using BlockFactory.Core.DTOs.Reservations;
 using BlockFactory.Core.Interfaces.Services;
@@ -20,6 +21,10 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
         // ─── تفويض dialog التأكيد للـ View (MVVM-safe) ─
         // تُسنَد من NewReservationView.xaml.cs مثلما هو في واجهة المبيعات
         public Func<string, Task<bool>>? ConfirmRequested { get; set; }
+
+        // ─── تفويض طباعة الفاتورة للـ View (MVVM-safe) ──
+        // تُسنَد من NewReservationView.xaml.cs مثلما هو في واجهة المبيعات
+        public Func<Task<bool>>? PrintRequested { get; set; }
 
         public NewReservationViewModel(
             IReservationService reservationService,
@@ -52,12 +57,44 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
                 }
                 SetProperty(ref _customerSearch, value);
                 if (!_isSelectingCustomer)
+                {
+                    HighlightedCustomerIndex = -1;
                     _ = SearchCustomersAsync(value);
+                }
             }
         }
 
         public ObservableCollection<CustomerLookupDto> CustomerResults { get; }
             = new();
+
+        // ─── التنقل بالكيبورد في نتائج البحث ──────────
+        private int _highlightedCustomerIndex = -1;
+        public int HighlightedCustomerIndex
+        {
+            get => _highlightedCustomerIndex;
+            set => SetProperty(ref _highlightedCustomerIndex, value);
+        }
+
+        public void HandleCustomerSearchKey(string key)
+        {
+            if (CustomerResults.Count == 0) return;
+            switch (key)
+            {
+                case "Down":
+                    HighlightedCustomerIndex = Math.Min(HighlightedCustomerIndex + 1, CustomerResults.Count - 1);
+                    break;
+                case "Up":
+                    HighlightedCustomerIndex = Math.Max(HighlightedCustomerIndex - 1, 0);
+                    break;
+                case "Enter":
+                    if (HighlightedCustomerIndex >= 0 && HighlightedCustomerIndex < CustomerResults.Count)
+                    {
+                        SelectedCustomer = CustomerResults[HighlightedCustomerIndex];
+                        HighlightedCustomerIndex = -1;
+                    }
+                    break;
+            }
+        }
 
         private CustomerLookupDto? _selectedCustomer;
         public CustomerLookupDto? SelectedCustomer
@@ -644,6 +681,48 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
                 if (result.Success)
                 {
                     ShowSuccess(result.Message);
+
+                    // ─── طباعة فاتورة الحجز (نفس نمط واجهة المبيعات) ───
+                    bool shouldPrint = PrintRequested != null &&
+                                       await PrintRequested.Invoke();
+
+                    if (shouldPrint)
+                    {
+                        try
+                        {
+                            // ① جلب بايتات الـ PDF من الـ Service
+                            var pdfBytes = await _reservationService
+                                .GenerateReservationInvoicePdfAsync(result.Data);
+
+                            if (pdfBytes != null && pdfBytes.Length > 0)
+                            {
+                                // ② حفظ الملف في مجلد المستندات
+                                var folder = System.IO.Path.Combine(
+                                    Environment.GetFolderPath(
+                                        Environment.SpecialFolder.MyDocuments),
+                                    "BlockFactory_Invoices");
+
+                                System.IO.Directory.CreateDirectory(folder);
+
+                                var fileName = $"Reservation_{result.Data}_{DateTime.Now:yyyyMMdd_HHmmss}.html";
+                                var filePath = System.IO.Path.Combine(folder, fileName);
+
+                                await System.IO.File.WriteAllBytesAsync(filePath, pdfBytes);
+
+                                // ③ فتح الملف في المتصفح مباشرةً
+                                OpenInBrowser(filePath);
+                            }
+                            else
+                            {
+                                ShowError("⚠️ لم يتم توليد الفاتورة — تحقق من بيانات الحجز");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowError($"خطأ في الطباعة: {ex.Message}");
+                        }
+                    }
+
                     ClearForm();
                 }
                 else
@@ -658,6 +737,98 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+
+        // ─── فتح الفاتورة في المتصفح مباشرةً ────────────────────────
+        /// <summary>
+        /// يحاول فتح الملف في أحد المتصفحات المعروفة بالترتيب:
+        /// Chrome → Edge → Firefox → التطبيق الافتراضي.
+        /// يتجنب فتحه في VS Code أو أي محرر نصوص.
+        /// </summary>
+        private static void OpenInBrowser(string filePath)
+        {
+            // قائمة المتصفحات بالترتيب المفضل
+            var browsers = new[]
+            {
+                // Chrome
+                new { Exe = "chrome.exe",
+                      Args = "--new-window \"" + filePath + "\"" },
+                // Edge
+                new { Exe = "msedge.exe",
+                      Args = "--new-window \"" + filePath + "\"" },
+                // Firefox
+                new { Exe = "firefox.exe",
+                      Args = "\"" + filePath + "\"" },
+            };
+
+            foreach (var browser in browsers)
+            {
+                try
+                {
+                    // ابحث في المسارات الشائعة
+                    var paths = new[]
+                    {
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFiles),
+                            "Google\\Chrome\\Application", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFilesX86),
+                            "Google\\Chrome\\Application", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFiles),
+                            "Microsoft\\Edge\\Application", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFilesX86),
+                            "Microsoft\\Edge\\Application", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFiles),
+                            "Mozilla Firefox", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFilesX86),
+                            "Mozilla Firefox", browser.Exe),
+                    };
+
+                    foreach (var exePath in paths)
+                    {
+                        if (System.IO.File.Exists(exePath))
+                        {
+                            System.Diagnostics.Process.Start(
+                                new System.Diagnostics.ProcessStartInfo
+                                {
+                                    FileName = exePath,
+                                    Arguments = "\"" + filePath + "\"",
+                                    UseShellExecute = false
+                                });
+                            return; // نجح — توقف
+                        }
+                    }
+                }
+                catch { /* جرب المتصفح التالي */ }
+            }
+
+            // Fallback: فتح بالتطبيق الافتراضي مع تحويل المسار لـ URL
+            try
+            {
+                var url = new Uri(filePath).AbsoluteUri;
+                System.Diagnostics.Process.Start(
+                    new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = url,
+                        UseShellExecute = true
+                    });
+            }
+            catch
+            {
+                // آخر محاولة — الشكل القديم
+                System.Diagnostics.Process.Start(filePath);
             }
         }
 

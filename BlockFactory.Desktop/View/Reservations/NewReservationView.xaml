@@ -166,10 +166,27 @@
                                         <ListBox
                                             x:Name="CustomerListBox"
                                             ItemsSource="{Binding CustomerResults}"
+                                            SelectedIndex="{Binding HighlightedCustomerIndex, Mode=TwoWay}"
                                             BorderThickness="0"
                                             MaxHeight="200"
                                             FontFamily="Segoe UI"
                                             MouseLeftButtonUp="CustomerListBox_MouseLeftButtonUp">
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="Padding" Value="0"/>
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter Property="Background" Value="#EBF5FB"/>
+                                                            <Setter Property="BorderBrush" Value="#AED6F1"/>
+                                                            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#F4F6F7"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Margin="10,6">

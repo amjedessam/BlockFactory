@@ -18,8 +18,7 @@ namespace BlockFactory.Desktop.Views.Reservations
             _viewModel = App.GetService<NewReservationViewModel>();
             DataContext = _viewModel;
 
-            // ✅ تسند ConfirmRequested بنفس أسلوب واجهة المبيعات (MVVM-safe)
-            // ViewModel لا يعرف أي شيء عن MessageBox — القرار في الـ View فقط
+            // ─── تحذير المخزون ───────────────────────────────────────────
             _viewModel.ConfirmRequested = async (message) =>
             {
                 var result = MessageBox.Show(
@@ -27,7 +26,20 @@ namespace BlockFactory.Desktop.Views.Reservations
                     "تحذير — المخزون غير كافٍ",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning,
-                    MessageBoxResult.No);        // الزر الافتراضي = لا
+                    MessageBoxResult.No);
+
+                return await Task.FromResult(result == MessageBoxResult.Yes);
+            };
+
+            // ─── طباعة فاتورة الحجز ──────────────────────────────────────
+            _viewModel.PrintRequested = async () =>
+            {
+                var result = MessageBox.Show(
+                    "تم حفظ فاتورة الحجز بنجاح.\nهل تريد طباعة الفاتورة؟",
+                    "طباعة فاتورة الحجز",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question,
+                    MessageBoxResult.Yes);
 
                 return await Task.FromResult(result == MessageBoxResult.Yes);
             };
@@ -36,9 +48,64 @@ namespace BlockFactory.Desktop.Views.Reservations
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             await _viewModel.LoadProductsCommand.ExecuteAsync(null);
+
+            // ─── نربط الكيبورد على مستوى الـ Window ──────────────────────
+            // الـ Popup يسرق الـ Focus — PreviewKeyDown يعمل قبل أي عنصر
+            var window = Window.GetWindow(this);
+            if (window != null)
+                window.PreviewKeyDown += Window_PreviewKeyDown;
         }
 
-        // تحديد العميل عند الضغط على أي نتيجة في القائمة
+        // ─── PreviewKeyDown على الـ Window ───────────────────────────────
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (_viewModel.CustomerResults.Count == 0) return;
+
+            var focused = Keyboard.FocusedElement;
+            bool searchHasFocus =
+                focused == CustomerSearchBox ||
+                IsDescendantOf(focused as DependencyObject, CustomerListBox);
+
+            if (!searchHasFocus) return;
+
+            bool isEnter = e.Key == Key.Enter || e.Key == Key.Return;
+            bool isUp = e.Key == Key.Up;
+            bool isDown = e.Key == Key.Down;
+
+            if (isDown || isUp || isEnter)
+            {
+                string keyName = isEnter ? "Enter" : e.Key.ToString();
+                _viewModel.HandleCustomerSearchKey(keyName);
+
+                if (!isEnter && _viewModel.HighlightedCustomerIndex >= 0)
+                {
+                    CustomerListBox.UpdateLayout();
+                    var item = CustomerListBox.ItemContainerGenerator
+                        .ContainerFromIndex(_viewModel.HighlightedCustomerIndex)
+                        as ListBoxItem;
+                    item?.BringIntoView();
+                }
+
+                CustomerSearchBox.Focus();
+                e.Handled = true;
+            }
+        }
+
+        // ─── helper: هل العنصر فرع من container معين ────────────────────
+        private static bool IsDescendantOf(DependencyObject? child,
+                                           DependencyObject? parent)
+        {
+            if (child == null || parent == null) return false;
+            var current = child;
+            while (current != null)
+            {
+                if (current == parent) return true;
+                current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+            }
+            return false;
+        }
+
+        // ─── اختيار العميل بالنقر بالماوس ───────────────────────────────
         private void CustomerListBox_MouseLeftButtonUp(
             object sender, MouseButtonEventArgs e)
         {

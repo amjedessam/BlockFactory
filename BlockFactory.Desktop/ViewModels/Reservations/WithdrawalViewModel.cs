@@ -12,6 +12,9 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
     {
         private readonly IReservationService _reservationService;
 
+        // ─── تفويض طباعة الفاتورة للـ View (MVVM-safe) ──
+        public Func<Task<bool>>? PrintRequested { get; set; }
+
         public WithdrawalViewModel(IReservationService reservationService)
         {
             _reservationService = reservationService;
@@ -45,7 +48,7 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
             }
         }
 
-        public bool HasReservation      => Reservation != null;
+        public bool HasReservation => Reservation != null;
         public bool IsQuantityReservation =>
             Reservation?.Type == Core.Models.Reservations.ReservationType.QuantityReservation;
         public bool IsOpenBalance =>
@@ -66,7 +69,7 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
                 SetProperty(ref _selectedProduct, value);
                 if (value != null)
                 {
-                    NewItemQuantity = 1;
+                    NewItemQuantity = 0;
                     OnPropertyChanged(nameof(AvailableQuantityText));
                     OnPropertyChanged(nameof(FixedPrice));
                 }
@@ -87,7 +90,7 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
             }
         }
 
-        private int _newItemQuantity = 1;
+        private int _newItemQuantity = 0;
         public int NewItemQuantity
         {
             get => _newItemQuantity;
@@ -119,10 +122,10 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
 
         // ─── Commands ───────────────────────────────
 
-        public RelayCommand      AddItemCommand    { get; private set; } = null!;
-        public RelayCommand      RemoveItemCommand { get; private set; } = null!;
-        public AsyncRelayCommand SaveCommand       { get; private set; } = null!;
-        public RelayCommand      ClearCommand      { get; private set; } = null!;
+        public RelayCommand AddItemCommand { get; private set; } = null!;
+        public RelayCommand RemoveItemCommand { get; private set; } = null!;
+        public AsyncRelayCommand SaveCommand { get; private set; } = null!;
+        public RelayCommand ClearCommand { get; private set; } = null!;
 
         private void InitializeCommands()
         {
@@ -184,9 +187,9 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
 
                     AvailableProducts.Add(new WithdrawalProductEntry
                     {
-                        ProductId         = snap.ProductId,
-                        ProductName       = snap.ProductName,
-                        FixedPrice        = snap.Price,
+                        ProductId = snap.ProductId,
+                        ProductName = snap.ProductName,
+                        FixedPrice = snap.Price,
                         QuantityRemaining = reservedItem.QuantityRemaining
                     });
                 }
@@ -195,9 +198,9 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
                     // للحجز المفتوح: كل المنتجات من الـ Snapshot
                     AvailableProducts.Add(new WithdrawalProductEntry
                     {
-                        ProductId         = snap.ProductId,
-                        ProductName       = snap.ProductName,
-                        FixedPrice        = snap.Price,
+                        ProductId = snap.ProductId,
+                        ProductName = snap.ProductName,
+                        FixedPrice = snap.Price,
                         QuantityRemaining = int.MaxValue // لا يوجد حد للكمية
                     });
                 }
@@ -247,14 +250,14 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
 
             WithdrawalItems.Add(new WithdrawalItemEntry
             {
-                ProductId   = SelectedProduct.ProductId,
+                ProductId = SelectedProduct.ProductId,
                 ProductName = SelectedProduct.ProductName,
-                FixedPrice  = SelectedProduct.FixedPrice,
-                Quantity    = NewItemQuantity
+                FixedPrice = SelectedProduct.FixedPrice,
+                Quantity = NewItemQuantity
             });
 
             SelectedProduct = null;
-            NewItemQuantity = 1;
+            NewItemQuantity = 0;
             ClearMessages();
             OnPropertyChanged(nameof(WithdrawalTotal));
         }
@@ -277,15 +280,15 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
 
                 var dto = new CreateWithdrawalDto
                 {
-                    ReservationId  = Reservation.Id,
+                    ReservationId = Reservation.Id,
                     WithdrawalDate = WithdrawalDate,
-                    Notes          = Notes,
-                    Items          = WithdrawalItems.Select(i =>
-                        new CreateWithdrawalItemDto
-                        {
-                            ProductId = i.ProductId,
-                            Quantity  = i.Quantity
-                        }).ToList()
+                    Notes = Notes,
+                    Items = WithdrawalItems.Select(i =>
+               new CreateWithdrawalItemDto
+               {
+                   ProductId = i.ProductId,
+                   Quantity = i.Quantity
+               }).ToList()
                 };
 
                 var result = await _reservationService.CreateWithdrawalAsync(dto);
@@ -293,6 +296,48 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
                 if (result.Success)
                 {
                     ShowSuccess(result.Message);
+
+                    // ─── طباعة فاتورة السحب (نفس نمط واجهة المبيعات) ───
+                    bool shouldPrint = PrintRequested != null &&
+                                       await PrintRequested.Invoke();
+
+                    if (shouldPrint)
+                    {
+                        try
+                        {
+                            // ① جلب بايتات الـ PDF
+                            var pdfBytes = await _reservationService
+                                .GenerateWithdrawalInvoicePdfAsync(result.Data);
+
+                            if (pdfBytes != null && pdfBytes.Length > 0)
+                            {
+                                // ② حفظ في مجلد المستندات
+                                var folder = System.IO.Path.Combine(
+                                    Environment.GetFolderPath(
+                                        Environment.SpecialFolder.MyDocuments),
+                                    "BlockFactory_Invoices");
+
+                                System.IO.Directory.CreateDirectory(folder);
+
+                                var fileName = $"Withdrawal_{result.Data}_{DateTime.Now:yyyyMMdd_HHmmss}.html";
+                                var filePath = System.IO.Path.Combine(folder, fileName);
+
+                                await System.IO.File.WriteAllBytesAsync(filePath, pdfBytes);
+
+                                // ③ فتح الملف في المتصفح مباشرةً
+                                OpenInBrowser(filePath);
+                            }
+                            else
+                            {
+                                ShowError("⚠️ لم يتم توليد فاتورة السحب — تحقق من البيانات");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowError($"خطأ في الطباعة: {ex.Message}");
+                        }
+                    }
+
                     // إعادة تحميل بيانات الحجز لتحديث الأرصدة
                     await LoadReservationAsync(Reservation.Id);
                     ClearForm();
@@ -312,13 +357,105 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
             }
         }
 
+
+        // ─── فتح الفاتورة في المتصفح مباشرةً ────────────────────────
+        /// <summary>
+        /// يحاول فتح الملف في أحد المتصفحات المعروفة بالترتيب:
+        /// Chrome → Edge → Firefox → التطبيق الافتراضي.
+        /// يتجنب فتحه في VS Code أو أي محرر نصوص.
+        /// </summary>
+        private static void OpenInBrowser(string filePath)
+        {
+            // قائمة المتصفحات بالترتيب المفضل
+            var browsers = new[]
+            {
+                // Chrome
+                new { Exe = "chrome.exe",
+                      Args = "--new-window \"" + filePath + "\"" },
+                // Edge
+                new { Exe = "msedge.exe",
+                      Args = "--new-window \"" + filePath + "\"" },
+                // Firefox
+                new { Exe = "firefox.exe",
+                      Args = "\"" + filePath + "\"" },
+            };
+
+            foreach (var browser in browsers)
+            {
+                try
+                {
+                    // ابحث في المسارات الشائعة
+                    var paths = new[]
+                    {
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFiles),
+                            "Google\\Chrome\\Application", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFilesX86),
+                            "Google\\Chrome\\Application", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFiles),
+                            "Microsoft\\Edge\\Application", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFilesX86),
+                            "Microsoft\\Edge\\Application", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFiles),
+                            "Mozilla Firefox", browser.Exe),
+                        System.IO.Path.Combine(
+                            Environment.GetFolderPath(
+                                Environment.SpecialFolder.ProgramFilesX86),
+                            "Mozilla Firefox", browser.Exe),
+                    };
+
+                    foreach (var exePath in paths)
+                    {
+                        if (System.IO.File.Exists(exePath))
+                        {
+                            System.Diagnostics.Process.Start(
+                                new System.Diagnostics.ProcessStartInfo
+                                {
+                                    FileName = exePath,
+                                    Arguments = "\"" + filePath + "\"",
+                                    UseShellExecute = false
+                                });
+                            return; // نجح — توقف
+                        }
+                    }
+                }
+                catch { /* جرب المتصفح التالي */ }
+            }
+
+            // Fallback: فتح بالتطبيق الافتراضي مع تحويل المسار لـ URL
+            try
+            {
+                var url = new Uri(filePath).AbsoluteUri;
+                System.Diagnostics.Process.Start(
+                    new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = url,
+                        UseShellExecute = true
+                    });
+            }
+            catch
+            {
+                // آخر محاولة — الشكل القديم
+                System.Diagnostics.Process.Start(filePath);
+            }
+        }
+
         private void ClearForm()
         {
             WithdrawalItems.Clear();
             SelectedProduct = null;
-            NewItemQuantity = 1;
-            WithdrawalDate  = DateTime.Today;
-            Notes           = null;
+            NewItemQuantity = 0;
+            WithdrawalDate = DateTime.Today;
+            Notes = null;
             ClearMessages();
             OnPropertyChanged(nameof(WithdrawalTotal));
         }
@@ -328,17 +465,17 @@ namespace BlockFactory.Desktop.ViewModels.Reservations
 
     public class WithdrawalProductEntry
     {
-        public int     ProductId         { get; set; }
-        public string  ProductName       { get; set; } = string.Empty;
-        public decimal FixedPrice        { get; set; }
-        public int     QuantityRemaining { get; set; }
-        public string  DisplayText =>
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public decimal FixedPrice { get; set; }
+        public int QuantityRemaining { get; set; }
+        public string DisplayText =>
             $"{ProductName} — {FixedPrice:N0} ر.ي";
     }
 
     public class WithdrawalItemEntry : BaseViewModel
     {
-        public int    ProductId   { get; set; }
+        public int ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public decimal FixedPrice { get; set; }
 
