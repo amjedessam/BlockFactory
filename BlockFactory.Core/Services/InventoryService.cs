@@ -50,7 +50,7 @@ namespace BlockFactory.Core.Services
         }
 
         public async Task<IEnumerable<InventoryMaterialRowDto>>
-            GetLowRawMaterialsAsync()
+                    GetLowRawMaterialsAsync()
         {
             var rows = await _uow.Inventory.GetLowRawMaterialsAsync();
             return rows.Select(m => new InventoryMaterialRowDto
@@ -61,5 +61,21 @@ namespace BlockFactory.Core.Services
                 MinimumThreshold = m.MinimumThreshold
             });
         }
+
+        public async Task<IEnumerable<InventoryMaterialRowDto>> GetRawMaterialsAsync()
+        {
+            var rows = await _uow.RawMaterials.Query()
+                .Where(r => r.IsActive)
+                .ToListAsync();
+
+            return rows.Select(m => new InventoryMaterialRowDto
+            {
+                RawMaterialId = m.Id,
+                Name = m.Name,
+                QuantityAvailable = m.QuantityAvailable,
+                MinimumThreshold = m.MinimumThreshold
+            });
+        }
+
     }
 }

@@ -822,7 +822,7 @@ namespace BlockFactory.Desktop.ViewModels.Suppliers
             }
         }
 
-        private decimal _quantity = 1;
+        private decimal _quantity = 0;
         public decimal Quantity
         {
             get => _quantity;

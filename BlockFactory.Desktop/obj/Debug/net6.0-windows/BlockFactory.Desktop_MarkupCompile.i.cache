@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\App.xaml
-212042494567
+24-64388111
 
-561616825403
+62-1963079254
 338-165176214
-Controls\LoadingOverlay.xaml;Controls\NotificationPanel.xaml;MainWindow.xaml;Themes\EnterpriseTheme.xaml;View\Auth\LoginWindow.xaml;View\Customers\CustomersView.xaml;View\Customers\PledgesView.xaml;View\Dashboard\DashboardView.xaml;View\Finance\FinanceView.xaml;View\HR\SalariesView.xaml;View\HR\WorkersView.xaml;View\Inventory\InventoryView.xaml;View\MainShell.xaml;View\Orders\NewOrderView.xaml;View\Orders\OrdersView.xaml;View\Production\ProductionView.xaml;View\Reports\ReportsView.xaml;View\Settings\ProductsView.xaml;View\Settings\SettingsView.xaml;View\Settings\UsersView.xaml;View\Suppliers\SuppliersView.xaml;
+Controls\LoadingOverlay.xaml;Controls\NotificationPanel.xaml;MainWindow.xaml;Themes\EnterpriseTheme.xaml;View\Auth\LoginWindow.xaml;View\Customers\CustomersView.xaml;View\Customers\PledgesView.xaml;View\Dashboard\DashboardView.xaml;View\Finance\FinanceView.xaml;View\HR\SalariesView.xaml;View\HR\WorkersView.xaml;View\Inventory\InventoryView.xaml;View\MainShell.xaml;View\Orders\NewOrderView.xaml;View\Orders\OrdersView.xaml;View\Production\ProductionView.xaml;View\Reports\ReportsView.xaml;View\Reservations\NewReservationView.xaml;View\Reservations\ReservationsView.xaml;View\Reservations\WithdrawalView.xaml;View\Settings\ProductsView.xaml;View\Settings\SettingsView.xaml;View\Settings\UsersView.xaml;View\Suppliers\SuppliersView.xaml;
 
-False
+True
 

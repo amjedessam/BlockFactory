@@ -1,4 +1,4 @@
-using System.Windows;
+/*using System.Windows;
 using System.Windows.Controls;
 using BlockFactory.Desktop.ViewModels.Settings;
 
@@ -20,28 +20,14 @@ namespace BlockFactory.Desktop.Views.Settings
             // يمكن تحديث حالة الـ API عند كل ظهور للشاشة
         }
 
-        // ── زر نسخ رابط API ──
-        private void CopyApiUrl_Click(object sender, RoutedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(_viewModel.ApiUrl))
-            {
-                Clipboard.SetText(_viewModel.ApiUrl);
-                MessageBox.Show(
-                    $"تم نسخ الرابط:\n{_viewModel.ApiUrl}",
-                    "تم النسخ",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information,
-                    MessageBoxResult.OK,
-                    MessageBoxOptions.RightAlign |
-                    MessageBoxOptions.RtlReading);
-            }
-        }
     }
-}
+}*/
 
-/*
+
+// BlockFactory.Desktop/Views/Settings/SettingsView.xaml.cs
+
+using System.Windows;
 using System.Windows.Controls;
-
 using BlockFactory.Desktop.ViewModels.Settings;
 
 namespace BlockFactory.Desktop.Views.Settings
@@ -57,10 +43,45 @@ namespace BlockFactory.Desktop.Views.Settings
             DataContext = _viewModel;
         }
 
-        private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // يمكن لاحقاً: تحديث حالة الـ API أو النسخ عند كل ظهور للشاشة
+            await _viewModel.LoadProductsAsync();
+            await _viewModel.LoadInventoryAsync();
+        }
+
+        // ─── Tab Switching ───────────────────────────
+
+        private void TabPrices_Click(object sender, RoutedEventArgs e)
+        {
+            TabPricesContent.Visibility = Visibility.Visible;
+            TabInventoryContent.Visibility = Visibility.Collapsed;
+            TabRawMaterialsContent.Visibility = Visibility.Collapsed;
+
+            BtnTabPrices.Style = (Style)FindResource("TabBtnActive");
+            BtnTabInventory.Style = (Style)FindResource("TabBtn");
+            BtnTabRawMaterials.Style = (Style)FindResource("TabBtn");
+        }
+
+        private void TabInventory_Click(object sender, RoutedEventArgs e)
+        {
+            TabPricesContent.Visibility = Visibility.Collapsed;
+            TabInventoryContent.Visibility = Visibility.Visible;
+            TabRawMaterialsContent.Visibility = Visibility.Collapsed;
+
+            BtnTabPrices.Style = (Style)FindResource("TabBtn");
+            BtnTabInventory.Style = (Style)FindResource("TabBtnActive");
+            BtnTabRawMaterials.Style = (Style)FindResource("TabBtn");
+        }
+
+        private void TabRawMaterials_Click(object sender, RoutedEventArgs e)
+        {
+            TabPricesContent.Visibility = Visibility.Collapsed;
+            TabInventoryContent.Visibility = Visibility.Collapsed;
+            TabRawMaterialsContent.Visibility = Visibility.Visible;
+
+            BtnTabPrices.Style = (Style)FindResource("TabBtn");
+            BtnTabInventory.Style = (Style)FindResource("TabBtn");
+            BtnTabRawMaterials.Style = (Style)FindResource("TabBtnActive");
         }
     }
 }
-*/

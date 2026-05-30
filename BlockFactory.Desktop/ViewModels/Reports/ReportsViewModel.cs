@@ -24,10 +24,26 @@ namespace BlockFactory.Desktop.ViewModels.Reports
                 DateTime.Today.Year,
                 DateTime.Today.Month, 1);
             ToDate = DateTime.Today;
+            SalaryReportMonth = DateTime.Today.Month;
+            SalaryReportYear = DateTime.Today.Year;
             InitializeCommands();
         }
 
         // ─── Properties ─────────────────────────────
+        private int _salaryReportMonth;
+        public int SalaryReportMonth
+        {
+            get => _salaryReportMonth;
+            set => SetProperty(ref _salaryReportMonth, value);
+        }
+
+        private int _salaryReportYear;
+        public int SalaryReportYear
+        {
+            get => _salaryReportYear;
+            set => SetProperty(ref _salaryReportYear, value);
+        }
+
         private DateTime _reportDate;
         public DateTime ReportDate
         {
@@ -73,6 +89,23 @@ namespace BlockFactory.Desktop.ViewModels.Reports
             = null!;
         public AsyncRelayCommand SaveInventoryCommand { get; private set; }
             = null!;
+        public AsyncRelayCommand PrintSalarySheetCommand { get; private set; }
+            = null!;
+        public AsyncRelayCommand SaveSalarySheetCommand { get; private set; }
+            = null!;
+
+        // Months & Years lists for salary report
+        public List<MonthItem> SalaryMonths { get; } = Enumerable
+            .Range(1, 12)
+            .Select(m => new MonthItem(
+                new DateTime(2024, m, 1)
+                    .ToString("MMMM",
+                    new System.Globalization.CultureInfo("ar-SA")), m))
+            .ToList();
+
+        public List<int> SalaryYears { get; } = Enumerable
+            .Range(DateTime.Today.Year - 2, 4)
+            .ToList();
 
         private void InitializeCommands()
         {
@@ -159,6 +192,33 @@ namespace BlockFactory.Desktop.ViewModels.Reports
                         filename:
                             $"مخزون_{DateTime.Today:yyyyMMdd}.pdf");
                 });
+
+            // كشف الرواتب
+            PrintSalarySheetCommand = new AsyncRelayCommand(
+                async _ =>
+                {
+                    await ExecuteReportAsync(
+                        async () => await _reportService
+                            .GenerateSalarySheetPdfAsync(
+                                SalaryReportMonth,
+                                SalaryReportYear),
+                        print: true);
+                });
+
+            SaveSalarySheetCommand = new AsyncRelayCommand(
+                async _ =>
+                {
+                    var monthName = SalaryMonths
+                        .First(m => m.Value == SalaryReportMonth).Name;
+                    await ExecuteReportAsync(
+                        async () => await _reportService
+                            .GenerateSalarySheetPdfAsync(
+                                SalaryReportMonth,
+                                SalaryReportYear),
+                        print: false,
+                        filename:
+                            $"كشف_الرواتب_{monthName}_{SalaryReportYear}.pdf");
+                });
         }
 
         // ─── Execute ─────────────────────────────────
@@ -237,4 +297,6 @@ namespace BlockFactory.Desktop.ViewModels.Reports
             }
         }
     }
+
+    public record MonthItem(string Name, int Value);
 }

@@ -39,5 +39,21 @@ namespace BlockFactory.Desktop.Views.Settings
             AccountantPasswordBox.Password = string.Empty;
             _viewModel.CancelAddAccountantFormCommand.Execute(null);
         }
+
+        private void CopyApiUrl_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_viewModel.ApiUrl))
+            {
+                Clipboard.SetText(_viewModel.ApiUrl);
+                MessageBox.Show(
+                    $"تم نسخ الرابط:\n{_viewModel.ApiUrl}",
+                    "تم النسخ",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information,
+                    MessageBoxResult.OK,
+                    MessageBoxOptions.RightAlign |
+                    MessageBoxOptions.RtlReading);
+            }
+        }
     }
 }

@@ -13,6 +13,7 @@
             <converters:InverseBoolConverter         x:Key="InverseBool"/>
             <converters:LoadingTextConverter         x:Key="LoadingTextConverter"/>
             <converters:CountToBoolConverter         x:Key="CountToBool"/>
+            <converters:CountToVisibilityConverter   x:Key="CountToVisibility"/>
             <converters:DecimalToBoolConverter       x:Key="DecimalToBool"/>
             <converters:BoolToColorConverter         x:Key="BoolToColorConverter"/>
             <converters:BoolToTextConverter          x:Key="BoolToTextConverter"/>
@@ -24,6 +25,8 @@
             <converters:ProfitLabelConverter         x:Key="ProfitLabelConverter"/>
             <converters:BoolToBrushConverter         x:Key="BoolToBrush"/>
             <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <converters:StringToColorConverter       x:Key="StringToColorConverter"/>
+            <converters:PositiveColorConverter       x:Key="PositiveColorConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 

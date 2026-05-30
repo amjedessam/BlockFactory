@@ -122,4 +122,10 @@ C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.dll
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.pdb
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.genruntimeconfig.cache
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\View\Reservations\ReservationsView.baml
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\View\Reservations\WithdrawalView.baml
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\View\Reservations\ReservationsView.g.cs
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\View\Reservations\WithdrawalView.g.cs
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\View\Reservations\NewReservationView.baml
+C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\View\Reservations\NewReservationView.g.cs
 C:\Users\XPRISTO\source\repos\BlockFactory\BlockFactory.Desktop\obj\Debug\net6.0-windows\BlockFactory.Desktop.csproj.CopyComplete

@@ -25,6 +25,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
 
         // تفويض عرض dialog الطباعة للـ View (MVVM-safe)
         public Func<Task<bool>>? PrintRequested { get; set; }
+        public Func<string, Task<bool>>? ConfirmRequested { get; set; }
 
         public NewOrderViewModel(
             IOrderService orderService,
@@ -318,14 +319,14 @@ namespace BlockFactory.Desktop.ViewModels.Orders
                 SetProperty(ref _selectedProduct, value);
                 if (value != null)
                 {
-                    NewItemQuantity = 1;
+                    NewItemQuantity = 0;   // المستخدم يدخل الكمية بنفسه
                     NewItemPrice = value.DefaultPrice;
                     OnPropertyChanged(nameof(NewItemPriceRange));
                 }
             }
         }
 
-        private int _newItemQuantity = 1;
+        private int _newItemQuantity = 0;
         public int NewItemQuantity
         {
             get => _newItemQuantity;
@@ -626,7 +627,7 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             }
 
             SelectedProduct = null;
-            NewItemQuantity = 1;
+            NewItemQuantity = 0;   // إعادة تصفير بعد الإضافة
             NewItemPrice = 0;
             RecalculateTotals();
             CommandManager.InvalidateRequerySuggested();
@@ -667,6 +668,18 @@ namespace BlockFactory.Desktop.ViewModels.Orders
             {
                 ShowError("يرجى تحديد تاريخ الاستحقاق");
                 return;
+            }
+
+            var lowStockItems = OrderItems.Where(i => i.IsLowStock).ToList();
+            if (lowStockItems.Any())
+            {
+                var itemNames = string.Join("، ", lowStockItems.Select(i => i.ProductName));
+                var msg = $"الكمية المطلوبة لبعض المنتجات أكبر من المتوفر في المخزون:\n{itemNames}\n\nهل تريد المتابعة وحفظ الطلب رغم ذلك؟";
+                if (ConfirmRequested != null)
+                {
+                    bool allowSave = await ConfirmRequested(msg);
+                    if (!allowSave) return;
+                }
             }
 
             try

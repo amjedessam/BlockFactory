@@ -9,5 +9,6 @@ namespace BlockFactory.Core.Interfaces.Services
         Task<InventorySummaryDto> GetSummaryAsync();
         Task<IEnumerable<InventoryProductRowDto>> GetLowStockProductsAsync();
         Task<IEnumerable<InventoryMaterialRowDto>> GetLowRawMaterialsAsync();
+        Task<IEnumerable<InventoryMaterialRowDto>> GetRawMaterialsAsync();
     }
 }

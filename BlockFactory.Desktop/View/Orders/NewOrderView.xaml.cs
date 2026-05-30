@@ -29,6 +29,19 @@ namespace BlockFactory.Desktop.Views.Orders
 
                 return Task.FromResult(result == MessageBoxResult.Yes);
             };
+
+            _viewModel.ConfirmRequested = (msg) =>
+            {
+                var result = MessageBox.Show(
+                    msg,
+                    "تنبيه المخزون",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning,
+                    MessageBoxResult.No,
+                    MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading);
+
+                return Task.FromResult(result == MessageBoxResult.Yes);
+            };
         }
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)

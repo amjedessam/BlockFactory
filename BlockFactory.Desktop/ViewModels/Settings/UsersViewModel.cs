@@ -7,6 +7,7 @@ using System.Windows.Input;
 using BlockFactory.Core.Interfaces.Services;
 using BlockFactory.Core.Session;
 using BlockFactory.Desktop.Commands;
+using BlockFactory.Desktop.Services;
 using BlockFactory.Desktop.ViewModels.Base;
 
 namespace BlockFactory.Desktop.ViewModels.Settings
@@ -24,6 +25,7 @@ namespace BlockFactory.Desktop.ViewModels.Settings
         private const string AccountantRoleName = "Accountant";
 
         private readonly IAuthService _auth;
+        private readonly ApiHostService _apiHostService;
 
         private int? _accountantRoleId;
 
@@ -33,6 +35,32 @@ namespace BlockFactory.Desktop.ViewModels.Settings
             get => _isAccountantFormVisible;
             set => SetProperty(ref _isAccountantFormVisible, value);
         }
+
+        public bool CanManageApi => CurrentSession.Instance.HasPermission("ManageApi");
+
+        private bool _isApiRunning;
+        public bool IsApiRunning
+        {
+            get => _isApiRunning;
+            set
+            {
+                SetProperty(ref _isApiRunning, value);
+                OnPropertyChanged(nameof(ApiStatusText));
+                OnPropertyChanged(nameof(ApiToggleText));
+            }
+        }
+
+        private string _apiUrl = string.Empty;
+        public string ApiUrl
+        {
+            get => _apiUrl;
+            set => SetProperty(ref _apiUrl, value);
+        }
+
+        public string ApiStatusText => IsApiRunning ? "🟢 يعمل" : "🔴 متوقف";
+        public string ApiToggleText => IsApiRunning ? "⛔ إيقاف API" : "▶️ تشغيل API";
+
+        public AsyncRelayCommand ToggleApiCommand { get; private set; }
 
         private string _accountantFullName = string.Empty;
         public string AccountantFullName
@@ -61,9 +89,12 @@ namespace BlockFactory.Desktop.ViewModels.Settings
         public AsyncRelayCommand SaveAccountantCommand { get; }
         public AsyncRelayCommand LoadCommand { get; }
 
-        public UsersViewModel(IAuthService auth)
+        public UsersViewModel(
+            IAuthService auth,
+            ApiHostService apiHostService)
         {
             _auth = auth;
+            _apiHostService = apiHostService;
 
             LoadCommand = new AsyncRelayCommand(
                 async _ => await LoadAsync(),
@@ -100,6 +131,10 @@ namespace BlockFactory.Desktop.ViewModels.Settings
             SaveAccountantCommand = new AsyncRelayCommand(
                 SaveAccountantAsync,
                 CanSaveAccountant);
+
+            ToggleApiCommand = new AsyncRelayCommand(
+                async _ => await ToggleApiAsync(),
+                _ => CurrentSession.Instance.HasPermission("ManageApi"));
         }
 
         public ObservableCollection<UserListRow> Users { get; } = new();
@@ -190,6 +225,8 @@ namespace BlockFactory.Desktop.ViewModels.Settings
                 ClearMessages();
                 _accountantRoleId =
                     await _auth.GetRoleIdByNameAsync(AccountantRoleName);
+                IsApiRunning = _apiHostService.IsRunning;
+                ApiUrl = _apiHostService.ApiUrl;
                 await LoadUsersGridAsync();
             }
             finally
@@ -211,6 +248,37 @@ namespace BlockFactory.Desktop.ViewModels.Settings
                     RoleName = u.Role?.Name ?? "-",
                     IsActive = u.IsActive
                 });
+            }
+        }
+
+        private async Task ToggleApiAsync()
+        {
+            try
+            {
+                IsLoading = true;
+
+                if (IsApiRunning)
+                {
+                    await _apiHostService.StopAsync();
+                    IsApiRunning = false;
+                    ApiUrl = string.Empty;
+                    ShowSuccess("تم إيقاف الـ API");
+                }
+                else
+                {
+                    await _apiHostService.StartAsync();
+                    IsApiRunning = true;
+                    ApiUrl = _apiHostService.ApiUrl;
+                    ShowSuccess($"الـ API يعمل على: {ApiUrl}");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                ShowError($"خطأ: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
     }

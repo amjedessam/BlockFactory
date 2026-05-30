@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
 
 using BlockFactory.Core.DTOs.HR;
 using BlockFactory.Core.Interfaces.Services;
@@ -17,10 +19,12 @@ namespace BlockFactory.Desktop.ViewModels.HR
     public class SalariesViewModel : BaseViewModel
     {
         private readonly IHRService _hrService;
+        private readonly IReportService _reportService;
 
-        public SalariesViewModel(IHRService hrService)
+        public SalariesViewModel(IHRService hrService, IReportService reportService)
         {
             _hrService = hrService;
+            _reportService = reportService;
             SelectedMonth = DateTime.Today.Month;
             SelectedYear = DateTime.Today.Year;
             InitializeCommands();
@@ -105,6 +109,10 @@ namespace BlockFactory.Desktop.ViewModels.HR
         public RelayCommand CancelPayCommand { get; private set; } = null!;
         public AsyncRelayCommand AddBonusCommand { get; private set; }
             = null!;
+        public AsyncRelayCommand PrintSalarySheetCommand { get; private set; }
+            = null!;
+        public AsyncRelayCommand SaveSalarySheetCommand { get; private set; }
+            = null!;
 
         private void InitializeCommands()
         {
@@ -145,6 +153,12 @@ namespace BlockFactory.Desktop.ViewModels.HR
                 _ => SelectedSalary != null &&
                      SelectedSalary.Status != "مصروف" &&
                      CurrentSession.Instance.HasPermission("ManageSalaries"));
+
+            PrintSalarySheetCommand = new AsyncRelayCommand(
+                async _ => await ExecuteSalaryReportAsync(print: true));
+
+            SaveSalarySheetCommand = new AsyncRelayCommand(
+                async _ => await ExecuteSalaryReportAsync(print: false));
         }
 
         // ─── Load ────────────────────────────────────
@@ -274,6 +288,70 @@ namespace BlockFactory.Desktop.ViewModels.HR
                 await LoadAsync();
             }
             else ShowError(result.Message);
+        }
+
+        private async Task ExecuteSalaryReportAsync(bool print)
+        {
+            try
+            {
+                IsLoading = true;
+                ClearMessages();
+
+                var pdfBytes = await _reportService.GenerateSalarySheetPdfAsync(
+                    SelectedMonth, SelectedYear);
+
+                if (pdfBytes.Length == 0)
+                {
+                    ShowError("لا توجد بيانات لهذا الشهر");
+                    return;
+                }
+
+                if (print)
+                {
+                    await _reportService.PrintReportAsync(pdfBytes);
+                    ShowSuccess(
+                        "تم فتح ملف PDF. اطبع من القارئ (مثلاً Ctrl+P) إن أردت الطباعة على ورق.");
+                }
+                else
+                {
+                    var monthName = Months
+                        .First(m => m.Value == SelectedMonth).Name;
+                    var dialog = new Microsoft.Win32.SaveFileDialog
+                    {
+                        FileName = $"كشف_الرواتب_{monthName}_{SelectedYear}.pdf",
+                        DefaultExt = ".pdf",
+                        Filter = "PDF Files|*.pdf"
+                    };
+
+                    if (dialog.ShowDialog() == true)
+                    {
+                        await File.WriteAllBytesAsync(dialog.FileName, pdfBytes);
+                        ShowSuccess($"تم حفظ التقرير: {dialog.FileName}");
+
+                        try
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = dialog.FileName,
+                                UseShellExecute = true,
+                                WorkingDirectory = Path.GetDirectoryName(
+                                    dialog.FileName)
+                                    ?? Environment.GetFolderPath(
+                                        Environment.SpecialFolder.UserProfile)
+                            });
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError($"خطأ: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
     }
 

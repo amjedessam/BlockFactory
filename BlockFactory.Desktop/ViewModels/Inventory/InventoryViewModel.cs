@@ -28,7 +28,12 @@ namespace BlockFactory.Desktop.ViewModels.Inventory
         public ObservableCollection<InventoryProductRowDto> LowStockProducts
         { get; } = new();
 
+
         public ObservableCollection<InventoryMaterialRowDto> LowRawMaterials
+        { get; } = new();
+
+
+        public ObservableCollection<InventoryMaterialRowDto> AllRawMaterials
         { get; } = new();
 
         public InventoryViewModel(IInventoryService inventory)
@@ -52,6 +57,10 @@ namespace BlockFactory.Desktop.ViewModels.Inventory
             LowRawMaterials.Clear();
             foreach (var row in await _inventory.GetLowRawMaterialsAsync())
                 LowRawMaterials.Add(row);
+
+            AllRawMaterials.Clear();
+            foreach (var row in await _inventory.GetRawMaterialsAsync())
+                AllRawMaterials.Add(row);
         }
     }
 }

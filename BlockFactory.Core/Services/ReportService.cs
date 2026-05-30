@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using BlockFactory.Core.DTOs.HR;
 using BlockFactory.Core.DTOs.Reports;
 using BlockFactory.Core.Interfaces;
 using BlockFactory.Core.Interfaces.Services;
@@ -19,14 +20,16 @@ namespace BlockFactory.Core.Services
     public class ReportService : IReportService
     {
         private readonly IUnitOfWork _uow;
+        private readonly IHRService _hrService;
 
         // اسم المصنع للطباعة
         private const string FactoryName = "مصنع البلوك";
         private const string Currency = "ر.ي";
 
-        public ReportService(IUnitOfWork uow)
+        public ReportService(IUnitOfWork uow, IHRService hrService)
         {
             _uow = uow;
+            _hrService = hrService;
             // ترخيص QuestPDF المجاني
             QuestPDF.Settings.License = LicenseType.Community;
         }
@@ -1349,6 +1352,214 @@ namespace BlockFactory.Core.Services
                                 D(row.Status, true, statusColor);
                             }
                         });
+                    });
+                });
+            }).GeneratePdf();
+        }
+
+        public async Task<byte[]> GenerateSalarySheetPdfAsync(int month, int year)
+        {
+            var sheet = await _hrService.GetMonthlySalarySheetAsync(month, year);
+
+            if (sheet.Salaries.Count == 0)
+                return Array.Empty<byte>();
+
+            return Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4.Landscape());
+                    page.Margin(15, Unit.Millimetre);
+                    page.DefaultTextStyle(x =>
+                        x.FontFamily("Arial").FontSize(9));
+
+                    page.Content().Column(col =>
+                    {
+                        // ─── الرأس ────────────────────
+                        col.Item().Row(row =>
+                        {
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text(FactoryName)
+                                    .Bold().FontSize(18)
+                                    .FontColor(Color.FromHex("#1E3A5F"));
+                                c.Item().Text("كشف رواتب شهري")
+                                    .FontSize(12)
+                                    .FontColor(Color.FromHex("#7F8C8D"));
+                            });
+
+                            row.ConstantItem(180).Column(c =>
+                            {
+                                c.Item().AlignLeft()
+                                    .Text(sheet.MonthName)
+                                    .Bold().FontSize(14);
+                                c.Item().AlignLeft()
+                                    .Text($"طُبع: " +
+                                    $"{DateTime.Now:dd/MM/yyyy HH:mm}")
+                                    .FontSize(8)
+                                    .FontColor(Color.FromHex("#7F8C8D"));
+                            });
+                        });
+
+                        col.Item().PaddingVertical(6)
+                            .LineHorizontal(2)
+                            .LineColor(Color.FromHex("#1E3A5F"));
+
+                        // ─── بطاقات الملخص ────────────
+                        col.Item().Row(row =>
+                        {
+                            void SummaryCard(string label,
+                                string value, string color)
+                            {
+                                row.RelativeItem()
+                                    .Padding(4)
+                                    .Background(Color.FromHex(color))
+                                    .Padding(8)
+                                    .Column(c =>
+                                    {
+                                        c.Item()
+                                            .Text(label)
+                                            .FontSize(8)
+                                            .FontColor(Colors.White);
+                                        c.Item()
+                                            .Text(value)
+                                            .Bold().FontSize(12)
+                                            .FontColor(Colors.White);
+                                    });
+                            }
+
+                            SummaryCard("الراتب الأساسي",
+                                $"{sheet.TotalBasic:N0} {Currency}", "#1E3A5F");
+                            SummaryCard("إجمالي السلف",
+                                $"{sheet.TotalAdvances:N0} {Currency}", "#F39C12");
+                            SummaryCard("إجمالي الخصومات",
+                                $"{sheet.TotalDeductions:N0} {Currency}", "#E74C3C");
+                            SummaryCard("الصافي",
+                                $"{sheet.TotalNet:N0} {Currency}", "#27AE60");
+                            SummaryCard("المصروف",
+                                $"{sheet.TotalPaid:N0} {Currency}", "#2980B9");
+                            SummaryCard("المتبقي",
+                                $"{sheet.TotalRemaining:N0} {Currency}", "#8E44AD");
+                        });
+
+                        col.Item().PaddingVertical(8);
+
+                        // ─── جدول الرواتب ─────────────
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(cols =>
+                            {
+                                cols.RelativeColumn(3);
+                                cols.RelativeColumn(1.5f);
+                                cols.RelativeColumn(1.5f);
+                                cols.RelativeColumn(1.5f);
+                                cols.RelativeColumn(1.5f);
+                                cols.RelativeColumn(1.5f);
+                                cols.RelativeColumn(1.5f);
+                                cols.RelativeColumn(1.5f);
+                            });
+
+                            table.Header(header =>
+                            {
+                                void H(string t)
+                                {
+                                    header.Cell()
+                                        .Background(
+                                            Color.FromHex("#1E3A5F"))
+                                        .Padding(5)
+                                        .AlignCenter()
+                                        .Text(t)
+                                        .FontColor(Colors.White)
+                                        .Bold().FontSize(8);
+                                }
+
+                                H("العامل");
+                                H("الراتب");
+                                H("المكافأة");
+                                H("السلف");
+                                H("الخصومات");
+                                H("الصافي");
+                                H("المصروف");
+                                H("المتبقي");
+                            });
+
+                            bool even = false;
+                            foreach (var salary in sheet.Salaries)
+                            {
+                                var bg = even
+                                    ? Color.FromHex("#F8F9FA")
+                                    : Colors.White;
+                                even = !even;
+
+                                void D(string t,
+                                    bool center = false,
+                                    string? clr = null)
+                                {
+                                    var cell = table.Cell()
+                                        .Background(bg)
+                                        .Padding(4);
+
+                                    var txt = center
+                                        ? cell.AlignCenter().Text(t)
+                                        : cell.Text(t);
+
+                                    txt.FontSize(8);
+                                    if (clr != null)
+                                        txt.FontColor(Color.FromHex(clr));
+                                }
+
+                                D(salary.WorkerName);
+                                D($"{salary.BasicSalary:N0}", true);
+                                D($"{salary.Bonus:N0}", true);
+                                D($"{salary.TotalAdvances:N0}", true, "#F39C12");
+                                D($"{salary.TotalDeductions:N0}", true, "#E74C3C");
+                                D($"{salary.NetSalary:N0}", true, "#27AE60");
+                                D($"{salary.PaidAmount:N0}", true, "#2980B9");
+                                D($"{salary.RemainingAmount:N0}", true,
+                                    salary.RemainingAmount > 0 ? "#8E44AD" : "#27AE60");
+                            }
+
+                            // صف الإجمالي
+                            void TotalCell(string t, bool center = false,
+                                string? clr = null)
+                            {
+                                var cell = table.Cell()
+                                    .Background(Color.FromHex("#E8F6EF"))
+                                    .Padding(4);
+
+                                var txt = center
+                                    ? cell.AlignCenter().Text(t)
+                                    : cell.Text(t);
+
+                                txt.FontSize(8).Bold();
+                                if (clr != null)
+                                    txt.FontColor(Color.FromHex(clr));
+                            }
+
+                            TotalCell("الإجمالي", false);
+                            TotalCell($"{sheet.TotalBasic:N0}", true);
+                            TotalCell($"{sheet.TotalBonus:N0}", true);
+                            TotalCell($"{sheet.TotalAdvances:N0}", true, "#F39C12");
+                            TotalCell($"{sheet.TotalDeductions:N0}", true, "#E74C3C");
+                            TotalCell($"{sheet.TotalNet:N0}", true, "#27AE60");
+                            TotalCell($"{sheet.TotalPaid:N0}", true, "#2980B9");
+                            TotalCell($"{sheet.TotalRemaining:N0}", true, "#8E44AD");
+                        });
+
+                        // ─── ملاحظة ───────────────────
+                        col.Item().PaddingTop(10)
+                            .Text($"عدد العمال: {sheet.Salaries.Count}  |  " +
+                            $"كشف رواتب {sheet.MonthName}")
+                            .FontSize(8)
+                            .FontColor(Color.FromHex("#7F8C8D"));
+                    });
+
+                    page.Footer().AlignCenter().Text(x =>
+                    {
+                        x.Span("صفحة ").FontSize(8);
+                        x.CurrentPageNumber().FontSize(8);
+                        x.Span(" من ").FontSize(8);
+                        x.TotalPages().FontSize(8);
                     });
                 });
             }).GeneratePdf();

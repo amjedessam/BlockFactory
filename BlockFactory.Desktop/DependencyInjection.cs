@@ -15,6 +15,7 @@ using BlockFactory.Desktop.ViewModels.Inventory;
 using BlockFactory.Desktop.ViewModels.Orders;
 using BlockFactory.Desktop.ViewModels.Production;
 using BlockFactory.Desktop.ViewModels.Reports;
+using BlockFactory.Desktop.ViewModels.Reservations;
 using BlockFactory.Desktop.ViewModels.Settings;
 using BlockFactory.Desktop.ViewModels.Suppliers;
 using BlockFactory.Desktop.Views.Customers;
@@ -25,6 +26,7 @@ using BlockFactory.Desktop.Views.Inventory;
 using BlockFactory.Desktop.Views.Orders;
 using BlockFactory.Desktop.Views.Production;
 using BlockFactory.Desktop.Views.Reports;
+using BlockFactory.Desktop.Views.Reservations;
 using BlockFactory.Desktop.Views.Settings;
 using BlockFactory.Desktop.Views.Suppliers;
 using Microsoft.EntityFrameworkCore;
@@ -59,7 +61,7 @@ namespace BlockFactory.Desktop
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IInventoryService, InventoryService>();
-
+            services.AddScoped<IReservationService, ReservationService>();
             // ─── Navigation ────────────────────────
             services.AddSingleton<NavigationService>();
             services.AddSingleton<INavigationService>(
@@ -73,7 +75,9 @@ namespace BlockFactory.Desktop
             services.AddTransient<NewOrderViewModel>();
             services.AddTransient<CustomersViewModel>();
             services.AddTransient<PledgesViewModel>();
-
+            services.AddTransient<ReservationsViewModel>();
+            services.AddTransient<NewReservationViewModel>();
+            services.AddTransient<WithdrawalViewModel>();
             // ─── Views ─────────────────────────────
             services.AddTransient<DashboardView>();
             services.AddTransient<OrdersView>();
@@ -91,7 +95,10 @@ namespace BlockFactory.Desktop
             services.AddTransient<WorkersView>();
             services.AddTransient<SalariesView>();
 
-
+            // Reservation Views
+            services.AddTransient<ReservationsView>();
+            services.AddTransient<NewReservationView>();
+            services.AddTransient<WithdrawalView>();
             services.AddScoped<IFinanceService, FinanceService>();
             services.AddTransient<FinanceViewModel>();
             services.AddTransient<FinanceView>();
@@ -103,7 +110,10 @@ namespace BlockFactory.Desktop
 
 
 
-            services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IReportService>(sp =>
+                new ReportService(
+                    sp.GetRequiredService<IUnitOfWork>(),
+                    sp.GetRequiredService<IHRService>()));
             services.AddTransient<ReportsViewModel>();
             services.AddTransient<ReportsView>();
 

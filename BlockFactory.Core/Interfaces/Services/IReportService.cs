@@ -26,6 +26,7 @@ namespace BlockFactory.Core.Interfaces.Services
         Task<byte[]> GenerateProductionPdfAsync(
             DateTime from, DateTime to);
         Task<byte[]> GenerateInventoryPdfAsync();
+        Task<byte[]> GenerateSalarySheetPdfAsync(int month, int year);
 
         // Print
         Task PrintInvoiceAsync(int orderId);

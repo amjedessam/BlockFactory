@@ -201,7 +201,9 @@ namespace BlockFactory.Desktop.ViewModels
                         Title = "العملاء",
                         Icon = "👥",
                         ViewName = "Customers"
-                    }
+                    },
+                    new NavigationMenuItem { Title="الحجوزات والرصيد", Icon="💰", ViewName="Reservations" },
+new NavigationMenuItem { Title="فاتورة حجز جديدة", Icon="📋", ViewName="NewReservation" },
                 }
             };
 
@@ -222,7 +224,7 @@ namespace BlockFactory.Desktop.ViewModels
                     {
                         Title = "المخزون",
                         Icon = "📦",
-                        ViewName = "Inventory"
+                        ViewName = "Settings"
                     },
                     new NavigationMenuItem
                     {
@@ -287,17 +289,17 @@ namespace BlockFactory.Desktop.ViewModels
 
             if (IsAdmin)
             {
-                settingsGroup.Items.Add(new NavigationMenuItem
+              /*  settingsGroup.Items.Add(new NavigationMenuItem
                 {
                     Title = "الإعدادات",
                     Icon = "⚙",
                     ViewName = "Settings"
-                });
-            /*    settingsGroup.Items.Add(new NavigationMenuItem
+                });*/
+              /*  settingsGroup.Items.Add(new NavigationMenuItem
                 {
                     Title = "المنتجات والأسعار",
                     Icon = "🧱",
-                    ViewName = "Products"
+                    ViewName = "Inventory"
                 });*/
                 settingsGroup.Items.Add(new NavigationMenuItem
                 {
@@ -391,7 +393,10 @@ namespace BlockFactory.Desktop.ViewModels
                 "Reports" => "التقارير",
                 "Products" => "المنتجات والأسعار",
                 "Users" => "إدارة المستخدمين",
-                "Settings" => "الإعدادات",
+                "Settings" => "المخزون",
+                "Reservations"=> "الحجوزات والرصيد",
+                "NewReservation"=> "فاتورة حجز جديدة",
+                "Withdrawal" => "تفاصيل السحب",
                 _ => viewName
             };
 

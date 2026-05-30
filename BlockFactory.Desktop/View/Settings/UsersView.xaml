@@ -6,178 +6,364 @@
     Background="{StaticResource ErpBrushPageBg}"
     Loaded="UserControl_Loaded">
 
-    <Grid Margin="16">
+    <UserControl.Resources>
+        <Style x:Key="CardBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource ErpBrushCard}"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="18"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#12000000"
+                                      BlurRadius="14"
+                                      ShadowDepth="2"
+                                      Opacity="0.18"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource ErpBrushNavSidebar}"/>
+        </Style>
+
+        <Style x:Key="SectionHintStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource ErpBrushTextSecondary}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource ErpBrushTextSecondary}"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ErpBrushBorderInput}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ErpBrushBorderInput}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#EAECEF"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="RowHeight" Value="42"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+            <Setter Property="AlternatingRowBackground" Value="#FAFBFC"/>
+            <Setter Property="RowBackground" Value="White"/>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Background" Value="#F6F8FA"/>
+            <Setter Property="Foreground" Value="{StaticResource ErpBrushNavSidebar}"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Padding" Value="12,0"/>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- عنوان + شريط أدوات -->
-        <Grid Grid.Row="0" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <!-- الهيدر -->
+        <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0"
-                       Text="إدارة المستخدمين"
-                       FontSize="20" FontWeight="Bold"
-                       VerticalAlignment="Center"
-                       Foreground="{StaticResource ErpBrushNavSidebar}"/>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="إدارة المستخدمين" Style="{StaticResource SectionTitleStyle}" FontSize="22"/>
+                    <TextBlock Text="تنظيم الحسابات، متابعة حالة التفعيل، وإنشاء حسابات المحاسبين بشكل واضح ومرتب."
+                               Style="{StaticResource SectionHintStyle}"
+                               Margin="0,6,0,0"/>
+                </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Content="🔄 تحديث القائمة"
-                        Command="{Binding LoadCommand}"
-                        Height="36" Padding="14,0" Margin="0,0,8,0"
-                        Background="{StaticResource ErpBrushPageBg}"
-                        BorderBrush="{StaticResource ErpBrushBorderInput}"
-                        BorderThickness="1"
-                        FontFamily="Segoe UI" FontSize="13"
-                        Cursor="Hand"/>
-                <Button Content="➕ إضافة محاسب"
-                        Command="{Binding ShowAddAccountantFormCommand}"
-                        Height="36" Padding="16,0"
-                        Background="#E67E22"
-                        Foreground="White"
-                        BorderThickness="0"
-                        FontFamily="Segoe UI" FontSize="13"
-                        FontWeight="Bold"
-                        Cursor="Hand"/>
-            </StackPanel>
-        </Grid>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="🔄 تحديث القائمة"
+                            Command="{Binding LoadCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,0,8,0"/>
+                    <Button Content="➕ إضافة محاسب"
+                            Command="{Binding ShowAddAccountantFormCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Background="#E67E22"/>
+                </StackPanel>
+            </Grid>
+        </Border>
 
-        <!-- رسائل -->
-        <StackPanel Grid.Row="1" Margin="0,0,0,10">
-            <Border Background="#FDEDEC" CornerRadius="8" Padding="12,8"
-                    Visibility="{Binding HasError,
-                        Converter={StaticResource BoolToVisibility}}">
+        <!-- قسم API -->
+        <Border Grid.Row="1"
+                Style="{StaticResource CardBorderStyle}"
+                Margin="0,0,0,12"
+                Visibility="{Binding CanManageApi, Converter={StaticResource BoolToVisibility}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                    <TextBlock Text="واجهة الهاتف (Mobile API)"
+                               Style="{StaticResource SectionTitleStyle}"
+                               Margin="0,0,0,12"/>
+
+                    <WrapPanel Margin="0,0,0,10" VerticalAlignment="Center">
+                        <TextBlock Text="الحالة: "
+                                   FontFamily="Segoe UI"
+                                   FontSize="13"
+                                   Foreground="{StaticResource ErpBrushTextSecondary}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding ApiStatusText}"
+                                   FontFamily="Segoe UI"
+                                   FontSize="13"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Foreground>
+                                <SolidColorBrush Color="{Binding IsApiRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#27AE60|#E74C3C'}"/>
+                            </TextBlock.Foreground>
+                        </TextBlock>
+                    </WrapPanel>
+
+                    <Border Background="#F8FAFC"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12,10"
+                            Visibility="{Binding IsApiRunning, Converter={StaticResource BoolToVisibility}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="الرابط الحالي"
+                                           Style="{StaticResource SectionHintStyle}"
+                                           Margin="0,0,0,4"/>
+                                <TextBlock Text="{Binding ApiUrl}"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           FontFamily="Consolas"
+                                           Foreground="#2980B9"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1"
+                                    Content="📋 نسخ"
+                                    Click="CopyApiUrl_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Height="32"
+                                    Padding="12,0"
+                                    Background="#EBF5FB"
+                                    Foreground="#2980B9"
+                                    BorderBrush="#AED6F1"
+                                    Margin="12,0,0,0"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Content="{Binding ApiToggleText}"
+                        Command="{Binding ToggleApiCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Height="42"
+                        MinWidth="120"
+                        VerticalAlignment="Center">
+                    <Button.Background>
+                        <SolidColorBrush Color="{Binding IsApiRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#E74C3C|#27AE60'}"/>
+                    </Button.Background>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- رسائل الحالة -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,12">
+            <Border Background="#FDEDEC"
+                    BorderBrush="#F5B7B1"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="12,10"
+                    Margin="0,0,0,8"
+                    Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock Text="{Binding ErrorMessage}"
                            Foreground="#C0392B"
-                           FontFamily="Segoe UI" FontSize="13"
+                           FontFamily="Segoe UI"
+                           FontSize="13"
                            TextWrapping="Wrap"/>
             </Border>
-            <Border Background="#E8F8F0" CornerRadius="8" Padding="12,8"
-                    Visibility="{Binding SuccessMessage,
-                        Converter={StaticResource StringToVisibility}}">
+
+            <Border Background="#E8F8F0"
+                    BorderBrush="#ABEBC6"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="12,10"
+                    Visibility="{Binding SuccessMessage, Converter={StaticResource StringToVisibility}}">
                 <TextBlock Text="{Binding SuccessMessage}"
                            Foreground="#1E8449"
-                           FontFamily="Segoe UI" FontSize="13"
+                           FontFamily="Segoe UI"
+                           FontSize="13"
                            TextWrapping="Wrap"/>
             </Border>
         </StackPanel>
 
-        <Grid Grid.Row="2">
+        <!-- المحتوى الرئيسي -->
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="{Binding IsAccountantFormVisible,
-                    Converter={StaticResource BoolToWidth},
-                    ConverterParameter='360|0'}"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="{Binding IsAccountantFormVisible, Converter={StaticResource BoolToWidth}, ConverterParameter='380|0'}"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
-                    Background="{StaticResource ErpBrushCard}"
-                    CornerRadius="12" Padding="0"
-                    Margin="0,0,12,0">
-                <DataGrid ItemsSource="{Binding Users}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal"
-                          RowHeight="40"
-                          BorderThickness="0">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="الاسم" Binding="{Binding FullName}" Width="*"/>
-                        <DataGridTextColumn Header="اسم الدخول" Binding="{Binding Username}" Width="140"/>
-                        <DataGridTextColumn Header="الدور" Binding="{Binding RoleName}" Width="120"/>
-                        <DataGridCheckBoxColumn Header="نشط" Binding="{Binding IsActive}" Width="70"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+            <!-- جدول المستخدمين -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Background="#F8FAFC"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="0,0,0,1"
+                            CornerRadius="14,14,0,0"
+                            Padding="16,14">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right">
+                                <TextBlock Text="قائمة المستخدمين" Style="{StaticResource SectionTitleStyle}" FontSize="15"/>
+                                <TextBlock Text="عرض جميع المستخدمين الحاليين مع أدوارهم وحالة التفعيل." Style="{StaticResource SectionHintStyle}" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding Users}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              Margin="0"
+                              SelectionMode="Single"
+                              SelectionUnit="FullRow"
+                              BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="الاسم" Binding="{Binding FullName}" Width="*"/>
+                            <DataGridTextColumn Header="اسم الدخول" Binding="{Binding Username}" Width="160"/>
+                            <DataGridTextColumn Header="الدور" Binding="{Binding RoleName}" Width="130"/>
+                            <DataGridCheckBoxColumn Header="نشط" Binding="{Binding IsActive}" Width="80"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </Border>
 
             <!-- نموذج إضافة محاسب -->
             <Border x:Name="AccountantFormBorder"
-                    Grid.Column="1"
-                    Background="{StaticResource ErpBrushCard}"
-                    CornerRadius="12" Padding="16"
+                    Grid.Column="2"
+                    Style="{StaticResource CardBorderStyle}"
+                    Padding="20"
                     IsVisibleChanged="AccountantForm_IsVisibleChanged">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="حساب محاسب جديد"
-                                   FontSize="16" FontWeight="Bold"
-                                   Foreground="{StaticResource ErpBrushNavSidebar}"
-                                   FontFamily="Segoe UI"
-                                   Margin="0,0,0,4"/>
-                        <TextBlock Text="يُنشئ المدير الحساب؛ يسجّل المحاسب الدخول بنفس اسم المستخدم وكلمة المرور التي تُدخل هنا، وتُطبَّق عليه صلاحيات المحاسب في النظام."
-                                   FontSize="12"
-                                   Foreground="{StaticResource ErpBrushTextSecondary}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,0,0,16"
-                                   FontFamily="Segoe UI"/>
+                        <TextBlock Text="حساب محاسب جديد" Style="{StaticResource SectionTitleStyle}"/>
+                        <TextBlock Text="يُنشئ المدير الحساب، ثم يستخدم المحاسب اسم المستخدم وكلمة المرور المدخلة هنا لتسجيل الدخول مع صلاحياته المخصصة."
+                                   Style="{StaticResource SectionHintStyle}"
+                                   Margin="0,6,0,18"/>
 
-                        <TextBlock Text="الاسم الكامل"
-                                   FontFamily="Segoe UI" FontSize="12"
-                                   Foreground="{StaticResource ErpBrushTextSecondary}"
-                                   Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding AccountantFullName,
-                            UpdateSourceTrigger=PropertyChanged}"
-                                 Height="36" Padding="10,0"
-                                 FontFamily="Segoe UI" FontSize="13"
-                                 Margin="0,0,0,12"
-                                 BorderBrush="{StaticResource ErpBrushBorderInput}"
-                                 BorderThickness="1.5"/>
+                        <TextBlock Text="الاسم الكامل" Style="{StaticResource FieldLabelStyle}"/>
+                        <TextBox Text="{Binding AccountantFullName, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputTextBoxStyle}"/>
 
-                        <TextBlock Text="اسم المستخدم (لتسجيل الدخول)"
-                                   FontFamily="Segoe UI" FontSize="12"
-                                   Foreground="{StaticResource ErpBrushTextSecondary}"
-                                   Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding AccountantUsername,
-                            UpdateSourceTrigger=PropertyChanged}"
-                                 Height="36" Padding="10,0"
-                                 FontFamily="Segoe UI" FontSize="13"
-                                 Margin="0,0,0,12"
-                                 BorderBrush="{StaticResource ErpBrushBorderInput}"
-                                 BorderThickness="1.5"/>
+                        <TextBlock Text="اسم المستخدم (لتسجيل الدخول)" Style="{StaticResource FieldLabelStyle}"/>
+                        <TextBox Text="{Binding AccountantUsername, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputTextBoxStyle}"/>
 
-                        <TextBlock Text="كلمة المرور"
-                                   FontFamily="Segoe UI" FontSize="12"
-                                   Foreground="{StaticResource ErpBrushTextSecondary}"
-                                   Margin="0,0,0,4"/>
+                        <TextBlock Text="كلمة المرور" Style="{StaticResource FieldLabelStyle}"/>
                         <PasswordBox x:Name="AccountantPasswordBox"
-                                     Height="36"
+                                     Height="38"
                                      Padding="10,0"
-                                     FontFamily="Segoe UI" FontSize="13"
+                                     FontFamily="Segoe UI"
+                                     FontSize="13"
                                      Margin="0,0,0,6"
                                      BorderBrush="{StaticResource ErpBrushBorderInput}"
                                      BorderThickness="1.5"
+                                     Background="White"
                                      PasswordChanged="AccountantPassword_OnPasswordChanged"/>
-                        <TextBlock Text="6 أحرف على الأقل"
-                                   FontSize="11"
-                                   Foreground="{StaticResource ErpBrushTextSecondary}"
-                                   FontFamily="Segoe UI"
-                                   Margin="0,0,0,16"/>
+
+                        <TextBlock Text="يُفضّل ألا تقل كلمة المرور عن 6 أحرف."
+                                   Style="{StaticResource SectionHintStyle}"
+                                   Margin="0,0,0,18"/>
 
                         <Button Content="💾 حفظ وإنشاء الحساب"
                                 Command="{Binding SaveAccountantCommand}"
                                 CommandParameter="{Binding ElementName=AccountantPasswordBox}"
-                                Height="40"
+                                Style="{StaticResource PrimaryButtonStyle}"
                                 Background="#27AE60"
-                                Foreground="White"
-                                BorderThickness="0"
-                                FontFamily="Segoe UI" FontSize="13"
-                                FontWeight="SemiBold"
-                                Cursor="Hand"
                                 Margin="0,0,0,8"/>
 
                         <Button Content="إلغاء"
                                 Click="CancelAccountantForm_Click"
-                                Height="36"
-                                Background="{StaticResource ErpBrushPageBg}"
-                                Foreground="{StaticResource ErpBrushTextSecondary}"
-                                BorderBrush="{StaticResource ErpBrushBorderInput}"
-                                BorderThickness="1"
-                                FontFamily="Segoe UI" FontSize="13"
-                                Cursor="Hand"/>
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Foreground="{StaticResource ErpBrushTextSecondary}"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
